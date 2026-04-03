@@ -66,16 +66,16 @@ The **Variational Quantum Eigensolver** (Peruzzo et al., 2014) is a hybrid quant
 
 ```
  ┌─────────────────────────────────────────────────────────────┐
- │  Classical computer                                          │
+ │  Classical computer                                         │
  │  • Choose parameters θ                                      │
- │  • Run optimiser (L-BFGS-B / COBYLA / ADAM ...)            │
- │  • Receive energy E(θ) → update θ                          │
+ │  • Run optimiser (L-BFGS-B / COBYLA / ADAM ...)             │
+ │  • Receive energy E(θ) → update θ                           │
  └──────────────────────────┬──────────────────────────────────┘
                             │
  ┌──────────────────────────▼──────────────────────────────────┐
- │  Quantum processor                                           │
- │  • Prepare ansatz state |ψ(θ)⟩ = U(θ)|HF⟩                 │
- │  • Measure E(θ) = ⟨ψ(θ)|Ĥ|ψ(θ)⟩                          │
+ │  Quantum processor                                          │
+ │  • Prepare ansatz state |ψ(θ)⟩ = U(θ)|HF⟩                    │
+ │  • Measure E(θ) = ⟨ψ(θ)|Ĥ|ψ(θ)⟩                              │
  └─────────────────────────────────────────────────────────────┘
 ```
 
