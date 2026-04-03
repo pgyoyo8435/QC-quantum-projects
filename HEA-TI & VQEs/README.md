@@ -1,8 +1,7 @@
 # HEA-TI & VQEs — Variational Quantum Eigensolver for Molecular Ground States
 
 > **MSc Physics Research Project · IIT Kharagpur · 2026**  
-> **Author:** Prashant Gupta (Roll No. 24PH40033)  
-> **Supervisor:** Prof. Sonjoy Majumder, Department of Physics  
+> **Author:** Prashant Gupta
 > **Hardware platform focus:** Trapped-Ion Quantum Computers  
 
 ---
