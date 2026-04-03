@@ -85,7 +85,7 @@ By the **variational principle**, $E(\theta) \geq E_0$ always, so minimising $E(
 
 Trapped-ion processors achieve the highest reported two-qubit gate fidelities (~99.95–99.97%) and all-to-all qubit connectivity via phonon-mediated interactions. Their native entangling operation is a **global XY spin-spin interaction**:
 
-$$H_{XY} = \sum_{i < j} J_{ij} \left( \sigma_i^x \sigma_j^x + \sigma_i^y \sigma_j^y \right), \qquad J_{ij} \propto |i-j|^{-1.5}$$
+$$H_{XY} = \sum_{i < j} J_{ij} \left[ \sigma_i^x \sigma_j^x + \sigma_i^y \sigma_j^y \right], \qquad J_{ij} \propto |i-j|^{-1.5}$$
 
 The **HEA-TI ansatz** (Zhuang, Wu & Duan, PRA 2024) is built directly around this native interaction, making it hardware-efficient in the truest sense — no decomposition into hardware-unfriendly gates is needed.
 
@@ -465,7 +465,6 @@ If you use this code or results in your work, please cite:
   year        = {2026},
   type        = {MSc Thesis},
   department  = {Department of Physics},
-  supervisor  = {Prof. Sonjoy Majumder},
 }
 ```
 
