@@ -1,0 +1,3267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quantum Network Lab | QKD · Entanglement · Routing · Coexistence</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:      #04060e;
+      --bg1:     #070b14;
+      --panel:   #0b1120;
+      --panel-2: #0f1828;
+      --panel-3: #142030;
+      --line:    #1e2d44;
+      --line-2:  #2e4060;
+      --text:    #e8f2ff;
+      --muted:   #8fa4c0;
+      --dim:     #4e6278;
+      --blue:    #5ba3ff;
+      --cyan:    #36dfc8;
+      --green:   #5dd98a;
+      --amber:   #ffbe44;
+      --red:     #ff5f70;
+      --violet:  #a886ff;
+      --shadow:  0 20px 70px rgba(0,0,0,.45);
+      --radius:  9px;
+      --mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans:    "Google Sans", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --glow-cyan: 0 0 28px rgba(54,223,200,.18);
+      --glow-blue: 0 0 28px rgba(91,163,255,.18);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 2rem;
+    }
+
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .hero-orb-a {
+      width: 700px; height: 700px;
+      top: -250px; right: -200px;
+      background: radial-gradient(circle, rgba(54,223,200,.06) 0%, transparent 70%);
+    }
+    .hero-orb-b {
+      width: 500px; height: 500px;
+      bottom: -180px; left: -150px;
+      background: radial-gradient(circle, rgba(91,163,255,.05) 0%, transparent 70%);
+    }
+    .hero-orb-c {
+      width: 300px; height: 300px;
+      top: 40%; left: 10%;
+      background: radial-gradient(circle, rgba(168,134,255,.04) 0%, transparent 70%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 860px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid rgba(54,223,200,.35);
+      border-radius: 999px;
+      background: rgba(54,223,200,.07);
+      color: var(--cyan);
+      font: 12px/1 var(--mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 1.8rem;
+    }
+    .hero-eyebrow-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(54,223,200,.9);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .5; transform: scale(.7); }
+    }
+
+    .hero-title {
+      margin: 0 0 1.2rem;
+      font-size: clamp(40px, 8vw, 88px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(54,223,200,.9) 55%, rgba(91,163,255,.8) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      margin: 0 auto 2.4rem;
+      max-width: 620px;
+      color: var(--muted);
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.7;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border: 1px solid rgba(54,223,200,.7);
+      border-radius: 50px;
+      background: linear-gradient(135deg, rgba(54,223,200,.2), rgba(91,163,255,.15));
+      color: var(--cyan);
+      font: 600 15px/1 var(--sans);
+      cursor: pointer;
+      letter-spacing: .3px;
+      transition: all .2s;
+      box-shadow: 0 0 32px rgba(54,223,200,.12);
+    }
+    .cta-primary:hover {
+      background: linear-gradient(135deg, rgba(54,223,200,.3), rgba(91,163,255,.22));
+      box-shadow: 0 0 48px rgba(54,223,200,.25);
+      transform: translateY(-2px);
+    }
+    .cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font: 500 15px/1 var(--sans);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .cta-secondary:hover {
+      border-color: rgba(255,255,255,.25);
+      color: var(--text);
+      background: rgba(255,255,255,.07);
+    }
+
+    .hero-pills {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2.5rem;
+    }
+    .hero-pill {
+      padding: 5px 14px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      color: var(--dim);
+      font: 11px/1.4 var(--mono);
+    }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--dim);
+      font: 11px/1 var(--mono);
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ── CONCEPT STRIP (between hero and app) ── */
+    #concept-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .concept-cell {
+      padding: 2rem 1.5rem;
+      background: var(--bg1);
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .concept-cell:hover { background: var(--panel); }
+    .concept-num {
+      font: 11px/1 var(--mono);
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .7rem;
+    }
+    .concept-icon {
+      font-size: 26px;
+      margin-bottom: .7rem;
+      display: block;
+    }
+    .concept-cell h3 {
+      margin: 0 0 .5rem;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .concept-cell p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 760px) {
+      #concept-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      #concept-strip { grid-template-columns: 1fr; }
+    }
+
+    /* ── MAIN APP ── */
+    body::before {
+      content: "";
+      position: fixed;
+      width: 1px;
+      height: 52vh;
+      left: 22px;
+      bottom: 0;
+      background: linear-gradient(180deg, transparent, rgba(54,223,200,.38), transparent);
+      filter: drop-shadow(0 0 10px rgba(54,223,200,.4));
+      animation: scanLine 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes scanLine {
+      0%,100% { opacity:.15; transform: translateY(20px); }
+      50%      { opacity:.65; transform: translateY(-15px); }
+    }
+
+    button, input, select, textarea { font: inherit; }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 268px minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(4,6,14,.92);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 40px rgba(0,0,0,.28);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .mark {
+      width: 40px; height: 40px;
+      border: 1px solid #2a3f5a;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      background: conic-gradient(from 180deg, rgba(54,223,200,.22), rgba(91,163,255,.18), rgba(255,190,68,.14), rgba(54,223,200,.22));
+      box-shadow: inset 0 0 18px rgba(255,255,255,.06), 0 0 22px rgba(54,223,200,.1);
+      font-family: var(--mono);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -.2px;
+    }
+    .subtitle { margin: 1px 0 0; color: var(--muted); font-size: 11px; }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 5px 11px;
+      border: 1px solid var(--line-2);
+      border-radius: 999px;
+      background: rgba(11,17,32,.8);
+      color: var(--muted);
+      font: 12px/1.2 var(--mono);
+      white-space: nowrap;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgba(93,217,138,.8); }
+    .mode-indicator { color: var(--cyan); border-color: rgba(54,223,200,.4); background: rgba(54,223,200,.07); }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      grid-row: 2;
+      position: sticky;
+      top: 67px;
+      align-self: start;
+      height: calc(100vh - 67px);
+      padding: 16px 12px;
+      border-right: 1px solid var(--line);
+      background: rgba(4,6,14,.6);
+      overflow-y: auto;
+    }
+    .nav-group-title {
+      margin: 20px 10px 8px;
+      color: var(--dim);
+      font: 10px/1.2 var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+    .nav-button {
+      width: 100%;
+      min-height: 46px;
+      margin: 3px 0;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 9px 10px;
+      display: grid;
+      grid-template-columns: 30px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      transition: all .16s ease;
+    }
+    .nav-button:hover { color: var(--text); background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.07); transform: translateX(2px); }
+    .nav-button.active {
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(54,223,200,.16), rgba(91,163,255,.10)), rgba(11,17,32,.9);
+      border-color: rgba(54,223,200,.65);
+      box-shadow: 0 0 0 1px rgba(54,223,200,.07), var(--glow-cyan);
+    }
+    .nav-button.active::after { content: ""; }
+    .nav-num {
+      width: 28px; height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: rgba(255,255,255,.04);
+      color: var(--dim);
+      font: 11px/1 var(--mono);
+    }
+    .nav-button.active .nav-num {
+      color: var(--cyan);
+      background: rgba(54,223,200,.1);
+      box-shadow: inset 0 0 0 1px rgba(54,223,200,.3);
+    }
+    .nav-done { color: var(--green); font-size: 12px; }
+    .nav-text strong { display: block; font-size: 13px; font-weight: 650; }
+    .nav-text span { display: block; margin-top: 2px; color: var(--dim); font-size: 11px; }
+    .nav-button.active .nav-text span { color: var(--muted); }
+
+    /* ── MAIN CONTENT ── */
+    main { grid-row: 2; min-width: 0; padding: 24px; }
+    .view { display: none; max-width: 1300px; margin: 0 auto; animation: rise .2s ease-out; }
+    .view.active { display: block; }
+    @keyframes rise { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+    .view-header {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--cyan);
+      font: 11px/1.2 var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+    h2 { margin: 0; font-size: clamp(22px, 3vw, 36px); line-height: 1.08; letter-spacing: -.5px; }
+    .lede { max-width: 820px; margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+
+    /* ── CONCEPT EXPLAINER (inside view) ── */
+    .concept-explainer {
+      margin-bottom: 20px;
+      border: 1px solid rgba(54,223,200,.2);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(54,223,200,.04), rgba(91,163,255,.03));
+      overflow: hidden;
+    }
+    .concept-explainer summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--cyan);
+      border-bottom: 1px solid transparent;
+    }
+    .concept-explainer summary::after { content: "▾"; margin-left: auto; font-size: 12px; color: var(--cyan); }
+    .concept-explainer[open] summary { border-bottom-color: rgba(54,223,200,.15); }
+    .concept-explainer summary::-webkit-details-marker { display: none; }
+    .concept-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 700px) { .concept-body { grid-template-columns: 1fr; } }
+    .concept-block h4 { margin: 0 0 6px; font-size: 13px; color: var(--text); }
+    .concept-block p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .key-insight {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-left: 3px solid var(--cyan);
+      background: rgba(54,223,200,.06);
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .key-insight strong { color: var(--cyan); }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(310px, 380px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── PANELS ── */
+    .panel, .metric, .note, .log, details.accordion {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(11,17,32,.9);
+      box-shadow: 0 1px 0 rgba(255,255,255,.025) inset;
+      backdrop-filter: blur(12px);
+    }
+    .panel {
+      padding: 16px;
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(54,223,200,.4), transparent);
+      opacity: .45;
+    }
+    .panel + .panel, .stack > * + * { margin-top: 14px; }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font: 11px/1.2 var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+
+    .control {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 80px;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+      padding: 9px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      transition: all .16s ease;
+    }
+    .control:hover, .control.is-touched { background: rgba(54,223,200,.03); border-color: rgba(54,223,200,.16); }
+    .control.is-touched { box-shadow: inset 3px 0 0 rgba(54,223,200,.5); }
+    .control label { color: var(--text); font-size: 13px; font-weight: 600; }
+    .hint { display: block; margin-top: 3px; color: var(--dim); font-size: 11px; line-height: 1.3; font-weight: 400; }
+    .control-output { justify-self: end; color: var(--cyan); font: 12px/1 var(--mono); white-space: nowrap; transition: all .16s; }
+    .control.is-touched .control-output { color: var(--amber); transform: scale(1.05); }
+
+    input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      height: 5px;
+      appearance: none;
+      background: linear-gradient(90deg, rgba(91,163,255,.75), rgba(54,223,200,.6));
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 17px; height: 17px;
+      border: 2px solid #d0e8ff;
+      border-radius: 50%;
+      background: #0d1a2e;
+      box-shadow: 0 0 14px rgba(54,223,200,.45);
+      cursor: pointer;
+    }
+
+    /* ── STEPPER BUTTONS (mobile fine-tuning) ── */
+    .stepper-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .stepper-row input[type="range"] {
+      flex: 1;
+      margin: 0;
+    }
+    .step-btn {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      background: rgba(255,255,255,.04);
+      color: var(--cyan);
+      font: 700 16px/1 var(--mono);
+      cursor: pointer;
+      transition: all .14s;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .step-btn:hover  { background: rgba(54,223,200,.12); border-color: var(--cyan); }
+    .step-btn:active { transform: scale(.9); background: rgba(54,223,200,.22); }
+    /* On large screens hide steppers; on touch/small screens always show */
+    @media (hover: hover) and (pointer: fine) and (min-width: 820px) {
+      .step-btn { opacity: 0; pointer-events: none; }
+      .control:hover .step-btn,
+      .control.is-touched .step-btn { opacity: 1; pointer-events: auto; }
+    }
+    input[type="number"], select {
+      width: 100%;
+      min-height: 37px;
+      padding: 7px 10px;
+      border: 1px solid var(--line-2);
+      border-radius: 7px;
+      background: #070d19;
+      color: var(--text);
+      outline: none;
+    }
+    input[type="number"]:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(91,163,255,.14);
+    }
+    select.is-touched, input[type="number"].is-touched {
+      border-color: rgba(54,223,200,.6);
+      box-shadow: 0 0 0 3px rgba(54,223,200,.1);
+    }
+
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .button {
+      min-height: 37px;
+      border: 1px solid var(--line-2);
+      border-radius: 7px;
+      padding: 8px 14px;
+      color: var(--text);
+      background: rgba(255,255,255,.03);
+      cursor: pointer;
+      font-weight: 650;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .button:hover { border-color: var(--blue); background: rgba(91,163,255,.11); transform: translateY(-1px); }
+    .button:active, .button.is-running { transform: translateY(1px) scale(.99); border-color: rgba(54,223,200,.85); box-shadow: 0 0 0 3px rgba(54,223,200,.13), 0 0 24px rgba(54,223,200,.13); }
+    .button.primary { border-color: rgba(54,223,200,.65); background: linear-gradient(135deg, rgba(54,223,200,.16), rgba(91,163,255,.13)); color: #f5fffd; box-shadow: 0 0 22px rgba(54,223,200,.07); }
+    .button.warn { border-color: rgba(255,190,68,.55); color: #ffe4a0; background: rgba(255,190,68,.07); }
+
+    /* ── METRICS ── */
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 14px; }
+    .metrics.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .metric {
+      min-height: 96px;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all .18s;
+    }
+    .metric.updated { border-color: rgba(54,223,200,.6); transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(54,223,200,.07), 0 16px 40px rgba(0,0,0,.25); }
+    .metric-label { color: var(--dim); font: 10px/1.25 var(--mono); text-transform: uppercase; letter-spacing: .07em; }
+    .metric-value { margin-top: 8px; font: 700 22px/1.1 var(--mono); color: var(--text); overflow-wrap: anywhere; }
+    .metric-sub { margin-top: 5px; color: var(--dim); font-size: 10px; }
+
+    .good      { color: var(--green)  !important; }
+    .warn-text { color: var(--amber)  !important; }
+    .bad       { color: var(--red)    !important; }
+    .blue-text { color: var(--blue)   !important; }
+    .cyan-text { color: var(--cyan)   !important; }
+
+    /* ── CANVAS ── */
+    canvas {
+      width: 100%;
+      min-height: 220px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #060b12;
+    }
+    .canvas-short { min-height: 190px; }
+    .canvas-tall  { min-height: 300px; }
+
+    /* ── BIT TABLE ── */
+    .bit-table { overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); background: #070c15; max-height: 340px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 8px 9px; border-bottom: 1px solid rgba(255,255,255,.05); text-align: left; vertical-align: top; }
+    th { position: sticky; top: 0; z-index: 2; background: #0c1522; color: var(--muted); font: 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    tr.keep   td { background: rgba(54,223,200,.045); }
+    tr.error  td { background: rgba(255,95,112,.07); }
+    tr.sample td { box-shadow: inset 3px 0 0 var(--amber); }
+    .bit-table th, .bit-table td { white-space: nowrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px; min-height: 22px;
+      border-radius: 5px;
+      padding: 3px 7px;
+      border: 1px solid var(--line-2);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font: 12px/1 var(--mono);
+    }
+    .chip.z { border-color: rgba(91,163,255,.42); color: var(--blue); }
+    .chip.x { border-color: rgba(54,223,200,.42); color: var(--cyan); }
+    .chip.lost { color: var(--dim); }
+
+    /* ── LOG ── */
+    .log {
+      min-height: 150px;
+      max-height: 250px;
+      padding: 12px;
+      overflow: auto;
+      color: var(--muted);
+      font: 12px/1.7 var(--mono);
+      white-space: pre-wrap;
+    }
+    .log::-webkit-scrollbar { width: 4px; }
+    .log::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 2px; }
+    .log-line { display: block; }
+
+    /* ── STAGES ── */
+    .stages { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 9px; margin-bottom: 14px; }
+    .stage { min-height: 72px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.02); }
+    .stage strong { display: block; font-size: 12px; }
+    .stage span   { display: block; margin-top: 4px; color: var(--dim); font-size: 11px; }
+    .stage.done  { border-color: rgba(54,223,200,.42); background: rgba(54,223,200,.05); }
+    .stage.abort { border-color: rgba(255,95,112,.48); background: rgba(255,95,112,.06); }
+
+    /* ── NOTE / CALLOUT ── */
+    .note { padding: 13px 15px; color: var(--muted); background: rgba(15,24,42,.8); }
+    .note strong { color: var(--text); }
+
+    .insight-callout {
+      margin: 12px 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(91,163,255,.25);
+      border-radius: 8px;
+      background: rgba(91,163,255,.05);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .insight-callout .ic-title {
+      font: 600 12px/1 var(--mono);
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .insight-callout strong { color: var(--text); }
+
+    /* ── ACCORDION DETAILS ── */
+    details.accordion { padding: 0; overflow: hidden; }
+    details.accordion + details.accordion { margin-top: 12px; }
+    details.accordion summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      color: var(--text);
+      font-weight: 700;
+      border-bottom: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    details.accordion summary::after { content: "+"; color: var(--cyan); font: 700 18px/1 var(--mono); }
+    details.accordion[open] summary::after { content: "−"; }
+    details.accordion summary::-webkit-details-marker { display: none; }
+    details.accordion[open] summary { border-bottom-color: var(--line); }
+    .details-body { padding: 14px 16px 16px; }
+
+    /* ── FORMULA ── */
+    .formula {
+      padding: 10px 12px;
+      border: 1px solid rgba(91,163,255,.22);
+      border-radius: 7px;
+      background: rgba(91,163,255,.05);
+      color: #cde0ff;
+      font: 12px/1.6 var(--mono);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin: 10px 0;
+    }
+
+    /* ── STUDY TABLE ── */
+    .study-table td:first-child, .study-table th:first-child { width: 24%; color: var(--cyan); font-family: var(--mono); font-size: 12px; }
+
+    /* ── LEARNING PATH ── */
+    .learning-path { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 18px; }
+    .path-step {
+      min-height: 120px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(54,223,200,.055), rgba(91,163,255,.035));
+    }
+    .path-step strong { display: block; margin-bottom: 7px; color: var(--text); font-size: 14px; }
+    .path-step span { color: var(--muted); font-size: 13px; }
+
+    /* ── CALLOUT GRID ── */
+    .callout-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 14px 0; }
+    .source-card { padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(11,17,32,.8); }
+    .source-card h3, details.accordion h3 { margin: 0 0 7px; font-size: 15px; }
+    .source-card p, details.accordion p { margin: 0 0 10px; color: var(--muted); }
+
+    /* ── MANUAL GRID ── */
+    .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── MINI INDEX ── */
+    .mini-index { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .mini-index a {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      padding: 5px 12px;
+      border: 1px solid var(--line-2);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(255,255,255,.03);
+      font: 12px/1.2 var(--mono);
+    }
+    .mini-index a:hover { border-color: rgba(54,223,200,.6); text-decoration: none; background: rgba(54,223,200,.07); }
+
+    /* ── GLOSSARY ── */
+    .glossary-search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .glossary-search input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--line-2);
+      border-radius: 8px;
+      background: rgba(7,11,20,.9);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .glossary-search input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(54,223,200,.1); }
+    .glossary-search input::placeholder { color: var(--dim); }
+    .glossary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .glossary-grid { grid-template-columns: 1fr; } }
+    .gcard {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(11,17,32,.85);
+      transition: border-color .16s;
+    }
+    .gcard:hover { border-color: rgba(54,223,200,.3); }
+    .gcard-term {
+      font: 700 13px/1 var(--mono);
+      color: var(--cyan);
+      margin-bottom: 6px;
+    }
+    .gcard-def { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .gcard-formula {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: rgba(91,163,255,.06);
+      border-radius: 5px;
+      border: 1px solid rgba(91,163,255,.18);
+      font: 11px/1.5 var(--mono);
+      color: #cde0ff;
+    }
+    .gcard.hidden { display: none; }
+
+    /* ── REPORTS ── */
+    .report-list { margin-top: 12px; display: grid; gap: 9px; }
+    .report-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 11px 12px; background: rgba(255,255,255,.02); }
+    .report-item strong { display: block; margin-bottom: 4px; font-size: 13px; }
+    .report-item span { color: var(--muted); font-size: 12px; }
+
+    /* ── REFERENCES ── */
+    .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+    @media (max-width: 780px) { .ref-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .ref-grid { grid-template-columns: 1fr; } }
+    .ref-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(11,17,32,.8);
+    }
+    .ref-card h4 { margin: 0 0 5px; font-size: 13px; color: var(--text); }
+    .ref-card p { margin: 0; font-size: 11px; color: var(--dim); font-family: var(--mono); }
+    .ref-tag {
+      display: inline-block;
+      margin-bottom: 7px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font: 10px/1.4 var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .tag-protocol { background: rgba(54,223,200,.1); color: var(--cyan); }
+    .tag-experiment { background: rgba(91,163,255,.1); color: var(--blue); }
+    .tag-theory { background: rgba(168,134,255,.1); color: var(--violet); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      right: 18px; bottom: 18px;
+      z-index: 50;
+      max-width: min(400px, calc(100vw - 36px));
+      padding: 12px 15px;
+      border: 1px solid rgba(54,223,200,.4);
+      border-radius: 10px;
+      background: rgba(4,8,20,.94);
+      box-shadow: 0 16px 55px rgba(0,0,0,.38), 0 0 28px rgba(54,223,200,.1);
+      color: var(--text);
+      font: 12px/1.45 var(--mono);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── FOOTER ── */
+    .foot {
+      margin: 28px auto 0;
+      max-width: 1300px;
+      padding: 18px 0 6px;
+      color: var(--dim);
+      font: 12px/1.6 var(--mono);
+      border-top: 1px solid var(--line);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { grid-row: auto; position: sticky; top: 67px; z-index: 20; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 12px; display: flex; overflow-x: auto; }
+      .nav-group-title, .nav-text span { display: none; }
+      .nav-button { flex: 0 0 auto; width: auto; min-width: 140px; }
+      main { padding: 16px 14px; }
+      .layout, .manual-grid { grid-template-columns: 1fr; }
+      .metrics, .metrics.three, .callout-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .learning-path { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .stages { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 620px) {
+      .topbar { align-items: flex-start; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .view-header { grid-template-columns: 1fr; }
+      .metrics, .metrics.three, .callout-grid { grid-template-columns: 1fr; }
+      .learning-path { grid-template-columns: 1fr; }
+      .control { grid-template-columns: 1fr auto; }
+      .pill.hide-small { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-orb hero-orb-a"></div>
+  <div class="hero-orb hero-orb-b"></div>
+  <div class="hero-orb hero-orb-c"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      Interactive simulation suite
+    </div>
+    <h1 class="hero-title">Quantum<br>Network Lab</h1>
+    <p class="hero-sub">
+      A rigorous, self-contained environment for learning quantum key distribution,
+      time-bin entanglement, multi-node routing, and classical–quantum fiber coexistence —
+      the foundations of real telecom-grade quantum networks.
+    </p>
+    <div class="hero-cta-row">
+      <button class="cta-primary" onclick="enterLab()">
+        ↗ Enter the Lab
+      </button>
+      <button class="cta-secondary" onclick="enterLab('manual')">
+        Read the Manual
+      </button>
+    </div>
+    <div class="hero-pills">
+      <span class="hero-pill">BB84 Protocol</span>
+      <span class="hero-pill">Franson Interferometry</span>
+      <span class="hero-pill">Entanglement Swapping</span>
+      <span class="hero-pill">Raman Noise Modelling</span>
+      <span class="hero-pill">BBM92 Secret Key Rate</span>
+      <span class="hero-pill">Quantum Memory Decoherence</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none"><rect x="1" y="1" width="14" height="20" rx="7" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="7" r="2" fill="currentColor" opacity=".6"/></svg>
+    scroll to explore
+  </div>
+</section>
+
+<!-- ══════════════ CONCEPT STRIP ══════════════ -->
+<div id="concept-strip">
+  <div class="concept-cell" onclick="enterLab('bb84')">
+    <div class="concept-num">Lab 01</div>
+    <span class="concept-icon">🔑</span>
+    <h3>BB84 Quantum Key Distribution</h3>
+    <p>Encode bits in quantum bases. An eavesdropper always leaves a detectable trace. Learn how QBER, sifting, and privacy amplification produce a secret key.</p>
+  </div>
+  <div class="concept-cell" onclick="enterLab('entangle')">
+    <div class="concept-num">Lab 02</div>
+    <span class="concept-icon">⚛️</span>
+    <h3>Time-bin Entanglement</h3>
+    <p>Franson interferometry, Bell violation, and BBM92 key rate. The robust way to distribute entanglement over deployed telecom fiber.</p>
+  </div>
+  <div class="concept-cell" onclick="enterLab('routing')">
+    <div class="concept-num">Lab 03</div>
+    <span class="concept-icon">🔗</span>
+    <h3>Multi-node Routing</h3>
+    <p>Quantum repeaters cannot copy qubits. They use entanglement swapping and quantum memories to extend entanglement hop by hop across a metropolitan network.</p>
+  </div>
+  <div class="concept-cell" onclick="enterLab('coexist')">
+    <div class="concept-num">Lab 04</div>
+    <span class="concept-icon">📡</span>
+    <h3>Classical–Quantum Coexistence</h3>
+    <p>Raman scattering from C-band WDM channels degrades quantum signals. Learn why O-band is the preferred quantum wavelength for shared-fiber deployments like KPN's Hague–Delft link.</p>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="lab-app" class="app">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">QN</div>
+      <div>
+        <h1>Quantum Network Lab</h1>
+        <p class="subtitle">BB84 · Time-bin · Routing · Fiber coexistence</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="pill mode-indicator"><span class="dot"></span><span id="run-status">ready</span></span>
+      <span class="pill hide-small">single-file · no install</span>
+      <button class="button" id="btn-export-json" type="button">Export JSON report</button>
+      <button class="button" id="btn-reset-all" type="button">Reset lab</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="Lab sections">
+    <div class="nav-group-title">Simulations</div>
+    <button class="nav-button active" data-view="bb84" type="button">
+      <span class="nav-num">01</span>
+      <span class="nav-text"><strong>BB84 QKD</strong><span>prepare · sift · estimate</span></span>
+      <span class="nav-done" id="done-bb84" title="Completed" style="display:none">✓</span>
+    </button>
+    <button class="nav-button" data-view="entangle" type="button">
+      <span class="nav-num">02</span>
+      <span class="nav-text"><strong>Time-bin pairs</strong><span>Franson · CHSH · BBM92</span></span>
+      <span class="nav-done" id="done-entangle" style="display:none">✓</span>
+    </button>
+    <button class="nav-button" data-view="routing" type="button">
+      <span class="nav-num">03</span>
+      <span class="nav-text"><strong>Entanglement routing</strong><span>swapping · memories</span></span>
+      <span class="nav-done" id="done-routing" style="display:none">✓</span>
+    </button>
+    <button class="nav-button" data-view="coexist" type="button">
+      <span class="nav-num">04</span>
+      <span class="nav-text"><strong>Fiber coexistence</strong><span>WDM · Raman · budget</span></span>
+      <span class="nav-done" id="done-coexist" style="display:none">✓</span>
+    </button>
+    <div class="nav-group-title">Reference</div>
+    <button class="nav-button" data-view="glossary" type="button">
+      <span class="nav-num">05</span>
+      <span class="nav-text"><strong>Glossary</strong><span>key terms &amp; formulas</span></span>
+    </button>
+    <button class="nav-button" data-view="manual" type="button">
+      <span class="nav-num">06</span>
+      <span class="nav-text"><strong>Manual</strong><span>how to use the lab</span></span>
+    </button>
+    <button class="nav-button" data-view="notes" type="button">
+      <span class="nav-num">07</span>
+      <span class="nav-text"><strong>Study notes</strong><span>equations · interpretation</span></span>
+    </button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- ══ VIEW: BB84 ══ -->
+    <section class="view active" id="view-bb84">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Protocol lab — 01</p>
+          <h2>BB84 quantum key distribution</h2>
+          <p class="lede">Generate qubits, send them through a lossy/noisy fiber channel, let Bob measure in random bases, estimate QBER from a public sample, and compute the remaining secret key after privacy amplification.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="bb84-run" type="button">Run protocol</button>
+          <button class="button" id="bb84-mc" type="button">Monte Carlo</button>
+        </div>
+      </div>
+
+      <!-- CONCEPT EXPLAINER -->
+      <details class="concept-explainer" open>
+        <summary>🔑 What is BB84? — Expand for a first-principles explanation</summary>
+        <div class="concept-body">
+          <div class="concept-block">
+            <h4>The core idea</h4>
+            <p>Alice encodes each bit as a photon polarization, randomly choosing between two incompatible bases: rectilinear (Z: ↑/→) or diagonal (X: ↗/↘). Bob also randomly picks a basis to measure in. When they chose the same basis, Bob's result matches Alice's — these bits are <em>kept</em>. When bases differ, results are random and the bit is <em>discarded</em>. This is called <strong>sifting</strong>.</p>
+            <div class="key-insight"><strong>Key insight:</strong> No physical law can copy an unknown quantum state (no-cloning theorem). Eve must guess the basis, disturbing ~25% of kept bits if she intercepts. This raises the Quantum Bit Error Rate (QBER) above ~11%, signalling her presence.</div>
+          </div>
+          <div class="concept-block">
+            <h4>What to try first</h4>
+            <p>1. Run with default settings — note the QBER and final key length.<br>
+               2. Slowly increase <em>Optical misalignment</em> and watch QBER rise.<br>
+               3. Set <em>Eve intercept-resend</em> to 50%+  — the key should abort.<br>
+               4. Run <em>Monte Carlo</em> to see the statistical distribution of QBER across many trials.<br>
+               5. Increase fiber distance and observe how fewer detected pulses create noisier QBER estimates.</p>
+            <div class="insight-callout">
+              <div class="ic-title">⚡ Real-world connection</div>
+              The 11% QBER threshold shown here is the approximate abort point for idealized BB84. Real systems (like KPN's network) use <strong>decoy-state BB84</strong> with finite-key security proofs that account for pulse statistics and detector attacks.
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="layout">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-title">Parameters</div>
+            <div class="control">
+              <label for="bb84-pulses">Quantum pulses<span class="hint">Finite samples make QBER noisy; increase for smoother statistics.</span></label>
+              <output class="control-output" for="bb84-pulses" id="bb84-pulses-out">256</output>
+              <input type="range" id="bb84-pulses" min="64" max="2048" step="64" value="256" data-unit="">
+            </div>
+            <div class="control">
+              <label for="bb84-distance">Fiber distance<span class="hint">Loss reduces detection events before sifting.</span></label>
+              <output class="control-output" for="bb84-distance" id="bb84-distance-out">20 km</output>
+              <input type="range" id="bb84-distance" min="0" max="120" step="1" value="20" data-unit=" km">
+            </div>
+            <div class="control">
+              <label for="bb84-detector">Detector efficiency<span class="hint">Probability that an arriving photon is registered.</span></label>
+              <output class="control-output" for="bb84-detector" id="bb84-detector-out">70%</output>
+              <input type="range" id="bb84-detector" min="10" max="95" step="1" value="70" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="bb84-error">Optical misalignment<span class="hint">Intrinsic bit-flip probability from imperfect optics.</span></label>
+              <output class="control-output" for="bb84-error" id="bb84-error-out">2.0%</output>
+              <input type="range" id="bb84-error" min="0" max="12" step=".5" value="2" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="bb84-dark">Dark count probability<span class="hint">Per detection gate. Dark counts create random clicks.</span></label>
+              <output class="control-output" for="bb84-dark" id="bb84-dark-out">0.10%</output>
+              <input type="range" id="bb84-dark" min="0" max="2" step=".05" value=".1" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="bb84-eve">Eve intercept-resend<span class="hint">If Eve measures in the wrong basis she disturbs the state.</span></label>
+              <output class="control-output" for="bb84-eve" id="bb84-eve-out">0%</output>
+              <input type="range" id="bb84-eve" min="0" max="100" step="5" value="0" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="bb84-sample">Public test sample<span class="hint">Fraction of sifted bits revealed to estimate QBER.</span></label>
+              <output class="control-output" for="bb84-sample" id="bb84-sample-out">20%</output>
+              <input type="range" id="bb84-sample" min="5" max="50" step="5" value="20" data-unit="%">
+            </div>
+            <label class="hint" for="bb84-seed">Seed for repeatable runs</label>
+            <input type="number" id="bb84-seed" value="20260514" min="1" step="1">
+          </div>
+          <div class="panel">
+            <div class="panel-title">Protocol log</div>
+            <div class="log" id="bb84-log"></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Detected pulses</div><div class="metric-value" id="bb84-m-detected">--</div><div class="metric-sub" id="bb84-m-detrate">click probability</div></div>
+            <div class="metric"><div class="metric-label">Sifted key</div><div class="metric-value" id="bb84-m-sifted">--</div><div class="metric-sub">basis matches only</div></div>
+            <div class="metric"><div class="metric-label">Sample QBER</div><div class="metric-value" id="bb84-m-qber">--</div><div class="metric-sub">abort threshold ~11%</div></div>
+            <div class="metric"><div class="metric-label">Final secret key</div><div class="metric-value" id="bb84-m-final">--</div><div class="metric-sub">after sample + PA</div></div>
+          </div>
+          <div class="stages" id="bb84-stages"></div>
+          <div class="panel">
+            <div class="panel-title">Bit-level audit trail <span class="pill">first 96 pulses</span></div>
+            <div class="bit-table">
+              <table>
+                <thead><tr><th>#</th><th>A bit</th><th>A basis</th><th>Bob basis</th><th>Bob bit</th><th>Event</th></tr></thead>
+                <tbody id="bb84-table"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Monte Carlo QBER histogram</div>
+            <canvas class="canvas-short" id="bb84-chart" height="220" aria-label="BB84 Monte Carlo chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: ENTANGLEMENT ══ -->
+    <section class="view" id="view-entangle">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Photon-pair lab — 02</p>
+          <h2>Time-bin entanglement and BBM92</h2>
+          <p class="lede">Model an entangled photon-pair source, two telecom fiber arms, detector noise, Franson interference visibility, CHSH Bell violation, and the secure key rate for an entanglement-based QKD experiment.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="ent-run" type="button">Simulate source</button>
+          <button class="button" id="ent-scan" type="button">Scan distance</button>
+        </div>
+      </div>
+
+      <details class="concept-explainer">
+        <summary>⚛️ What is time-bin entanglement? — Click to expand</summary>
+        <div class="concept-body">
+          <div class="concept-block">
+            <h4>Time-bin encoding</h4>
+            <p>Instead of polarization, photons are encoded in <strong>early</strong> or <strong>late</strong> arrival time slots. A pair of entangled photons is created so that neither photon alone has a definite time-bin — they share a superposition. This makes the entanglement robust against polarization rotation in fiber, which is why it's preferred for metropolitan quantum networks.</p>
+            <div class="key-insight"><strong>Key insight:</strong> The <strong>Franson interferometer</strong> converts time-bin phase coherence into two-photon interference fringes. The fringe visibility V directly reveals entanglement quality. A CHSH S-value above 2 proves Bell inequality violation — no classical physics can explain the correlations.</div>
+          </div>
+          <div class="concept-block">
+            <h4>What to try first</h4>
+            <p>1. Run with default settings — note the S-value and whether Bell is violated.<br>
+               2. Increase <em>Phase noise</em> — watch the fringe wash out and S drop below 2.<br>
+               3. Try <em>Scan distance</em> to see how far the entanglement can reach before the key rate collapses.<br>
+               4. Compare C-band 1550 nm vs O-band 1310 nm — note the different attenuation rates.<br>
+               5. High dark counts destroy visibility even with good source quality.</p>
+            <div class="insight-callout">
+              <div class="ic-title">⚡ Real-world connection</div>
+              The KPN Hague–Delft metropolitan fiber link uses <strong>time-bin entanglement at 1310 nm (O-band)</strong> distributed over deployed dark fiber, demonstrating coexistence with bidirectional C-band classical traffic.
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="layout">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-title">Source and measurement</div>
+            <div class="control">
+              <label for="ent-rate">Pair generation rate<span class="hint">Entangled photon pairs created by the source per second.</span></label>
+              <output class="control-output" id="ent-rate-out">500 kpairs/s</output>
+              <input type="range" id="ent-rate" min="10" max="2000" step="10" value="500" data-unit=" kpairs/s">
+            </div>
+            <div class="control">
+              <label for="ent-span">End-to-end span<span class="hint">Source assumed near the midpoint.</span></label>
+              <output class="control-output" id="ent-span-out">30 km</output>
+              <input type="range" id="ent-span" min="1" max="160" step="1" value="30" data-unit=" km">
+            </div>
+            <div class="control">
+              <label for="ent-vis">Intrinsic visibility<span class="hint">Source/interferometer contrast before channel noise.</span></label>
+              <output class="control-output" id="ent-vis-out">94%</output>
+              <input type="range" id="ent-vis" min="50" max="99" step="1" value="94" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="ent-phase">Phase noise<span class="hint">RMS phase drift in the two unbalanced interferometers.</span></label>
+              <output class="control-output" id="ent-phase-out">8 deg</output>
+              <input type="range" id="ent-phase" min="0" max="60" step="1" value="8" data-unit=" deg">
+            </div>
+            <div class="control">
+              <label for="ent-dark">Dark counts<span class="hint">Detector background counts per detector per second.</span></label>
+              <output class="control-output" id="ent-dark-out">300 Hz</output>
+              <input type="range" id="ent-dark" min="0" max="5000" step="50" value="300" data-unit=" Hz">
+            </div>
+            <div class="control">
+              <label for="ent-window">Coincidence window<span class="hint">Timing gate. Shorter windows reduce accidentals but require precision.</span></label>
+              <output class="control-output" id="ent-window-out">100 ps</output>
+              <input type="range" id="ent-window" min="20" max="1000" step="20" value="100" data-unit=" ps">
+            </div>
+            <label class="hint" for="ent-band">Telecom band (sets fiber attenuation)</label>
+            <select id="ent-band">
+              <option value="1310" selected>O-band 1310 nm — 0.35 dB/km</option>
+              <option value="1550">C-band 1550 nm — 0.20 dB/km</option>
+              <option value="810">Visible 810 nm — 3.0 dB/km</option>
+            </select>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Measurement log</div>
+            <div class="log" id="ent-log"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Coincidences</div><div class="metric-value" id="ent-m-coinc">--</div><div class="metric-sub">central-bin events/s</div></div>
+            <div class="metric"><div class="metric-label">Visibility</div><div class="metric-value" id="ent-m-vis">--</div><div class="metric-sub">Franson fringe contrast</div></div>
+            <div class="metric"><div class="metric-label">CHSH S</div><div class="metric-value" id="ent-m-s">--</div><div class="metric-sub">classical bound: 2.000</div></div>
+            <div class="metric"><div class="metric-label">Secret key</div><div class="metric-value" id="ent-m-key">--</div><div class="metric-sub">BBM92 estimate</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Franson interferogram — C(φ) = C₀[1 + V·cos(φ)]/2</div>
+            <canvas id="ent-franson" height="260" aria-label="Franson interference plot"></canvas>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Distance scan — secret key rate vs span</div>
+            <canvas class="canvas-short" id="ent-scan-chart" height="220" aria-label="Distance scan chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: ROUTING ══ -->
+    <section class="view" id="view-routing">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Network lab — 03</p>
+          <h2>Entanglement routing in a multi-node network</h2>
+          <p class="lede">Create metropolitan-style topologies, choose an end-to-end route, and account for fiber loss, Bell-state measurement success, memory decoherence, and optional purification rounds.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="rt-run" type="button">Route entanglement</button>
+          <button class="button" id="rt-attempts" type="button">Attempt burst</button>
+        </div>
+      </div>
+
+      <details class="concept-explainer">
+        <summary>🔗 How do quantum repeaters work? — Click to expand</summary>
+        <div class="concept-body">
+          <div class="concept-block">
+            <h4>Why you can't just amplify</h4>
+            <p>Classical networks repeat signals by measuring and re-transmitting. Quantum networks <strong>cannot copy unknown qubits</strong> (no-cloning theorem). Instead, neighbouring nodes generate entangled pairs, store them in <strong>quantum memories</strong>, and perform <strong>Bell-state measurements (BSMs)</strong> that "swap" entanglement across the node — extending the entanglement without ever reading the qubit value.</p>
+            <div class="key-insight"><strong>Key insight:</strong> Each entanglement swap degrades fidelity slightly. <strong>Purification</strong> (entanglement distillation) can recover fidelity by consuming extra entangled pairs, but at the cost of throughput. Quantum memories must hold qubits long enough for heralding signals to propagate — this coherence time is critical.</div>
+          </div>
+          <div class="concept-block">
+            <h4>What to try first</h4>
+            <p>1. Run the diamond topology — observe the routing log to see which path is chosen.<br>
+               2. Reduce <em>Memory lifetime</em> to 5 ms — watch fidelity collapse.<br>
+               3. Increase <em>Purification rounds</em> to 3 — fidelity improves but throughput drops.<br>
+               4. Try <em>Attempt burst</em> to see the distribution of success probabilities per attempt.<br>
+               5. Switch to ring or mesh topology and see how redundant paths change routing options.</p>
+            <div class="insight-callout">
+              <div class="ic-title">⚡ Real-world connection</div>
+              The TU/e PhD project specifically targets <strong>routing protocols for multi-node quantum networks</strong> integrated into KPN's metropolitan fiber infrastructure, including how to schedule swaps and memory usage across multiple simultaneous users.
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="layout">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-title">Topology and hardware</div>
+            <label class="hint" for="rt-topology">Topology preset</label>
+            <select id="rt-topology">
+              <option value="line">Linear metro corridor</option>
+              <option value="diamond" selected>Diamond with backup route</option>
+              <option value="ring">Ring network</option>
+              <option value="mesh">Small random mesh</option>
+            </select>
+            <div class="control">
+              <label for="rt-nodes">Nodes<span class="hint">Alice and Bob plus intermediate repeater nodes.</span></label>
+              <output class="control-output" id="rt-nodes-out">7</output>
+              <input type="range" id="rt-nodes" min="4" max="10" step="1" value="7">
+            </div>
+            <div class="control">
+              <label for="rt-length">Mean link length<span class="hint">Long links reduce heralded entanglement rate.</span></label>
+              <output class="control-output" id="rt-length-out">12 km</output>
+              <input type="range" id="rt-length" min="2" max="40" step="1" value="12" data-unit=" km">
+            </div>
+            <div class="control">
+              <label for="rt-fidelity">Raw link fidelity<span class="hint">Quality of directly generated Bell pairs on each link.</span></label>
+              <output class="control-output" id="rt-fidelity-out">88%</output>
+              <input type="range" id="rt-fidelity" min="60" max="98" step="1" value="88" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="rt-memory">Memory lifetime<span class="hint">Storage decay during heralding and swapping delays.</span></label>
+              <output class="control-output" id="rt-memory-out">50 ms</output>
+              <input type="range" id="rt-memory" min="5" max="500" step="5" value="50" data-unit=" ms">
+            </div>
+            <div class="control">
+              <label for="rt-bsm">Bell-state analyser success<span class="hint">Linear optics limits BSM to ~50% without auxiliary resources.</span></label>
+              <output class="control-output" id="rt-bsm-out">50%</output>
+              <input type="range" id="rt-bsm" min="10" max="90" step="5" value="50" data-unit="%">
+            </div>
+            <div class="control">
+              <label for="rt-purify">Purification rounds<span class="hint">Improves fidelity but consumes pairs and lowers throughput.</span></label>
+              <output class="control-output" id="rt-purify-out">1</output>
+              <input type="range" id="rt-purify" min="0" max="3" step="1" value="1">
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Routing log</div>
+            <div class="log" id="rt-log"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Route</div><div class="metric-value" id="rt-m-route">--</div><div class="metric-sub">nodes on selected path</div></div>
+            <div class="metric"><div class="metric-label">End fidelity</div><div class="metric-value" id="rt-m-fid">--</div><div class="metric-sub">after swaps and memory</div></div>
+            <div class="metric"><div class="metric-label">Success probability</div><div class="metric-value" id="rt-m-prob">--</div><div class="metric-sub">per route attempt</div></div>
+            <div class="metric"><div class="metric-label">Throughput</div><div class="metric-value" id="rt-m-rate">--</div><div class="metric-sub">successful ebits/s</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Interactive topology — selected route highlighted</div>
+            <canvas class="canvas-tall" id="rt-canvas" height="330" aria-label="Quantum network topology"></canvas>
+            <p class="hint" id="rt-route-label">Click "Route entanglement" to select the highest-reliability path.</p>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Attempt burst — fidelity distribution</div>
+            <canvas class="canvas-short" id="rt-burst-chart" height="220" aria-label="Attempt burst chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: COEXISTENCE ══ -->
+    <section class="view" id="view-coexist">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Telecom coexistence lab — 04</p>
+          <h2>Quantum signals beside classical WDM traffic</h2>
+          <p class="lede">Explore how wavelength choice, launch power, WDM channel count, filter bandwidth, isolation, and fiber length affect Raman noise, QBER, and secret key rate on a shared fiber.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="cx-run" type="button">Update budget</button>
+          <button class="button" id="cx-scan" type="button">Scan power</button>
+        </div>
+      </div>
+
+      <details class="concept-explainer">
+        <summary>📡 Why does coexistence matter? — Click to expand</summary>
+        <div class="concept-body">
+          <div class="concept-block">
+            <h4>The Raman scattering problem</h4>
+            <p>Telecom operators want to use <strong>existing deployed fiber</strong> for quantum signals alongside classical data. But classical light (even in different WDM channels) causes <strong>spontaneous Raman scattering</strong> — photons generated at all wavelengths, including the quantum channel's wavelength. These Raman photons create noise clicks that raise QBER and can kill the secret key rate completely.</p>
+            <div class="key-insight"><strong>Key insight:</strong> Using the <strong>O-band (1310 nm)</strong> for the quantum channel while keeping classical traffic in the <strong>C-band (1530–1565 nm)</strong> provides ~240 nm of spectral separation, dramatically reducing Raman overlap. This is the strategy used in real KPN deployments.</div>
+          </div>
+          <div class="concept-block">
+            <h4>What to try first</h4>
+            <p>1. Compare O-band 1310 nm vs C-band 1550 nm quantum wavelengths — observe the Raman noise difference.<br>
+               2. Increase <em>Classical power/channel</em> from −10 to +10 dBm and watch QBER degrade.<br>
+               3. Increase <em>WDM channels</em> to 40 (full C-band) — see the noise multiply.<br>
+               4. Use <em>Scan power</em> to find the maximum safe classical launch power.<br>
+               5. Adjust <em>Classical isolation</em> — high isolation filters are the primary engineering mitigation.</p>
+            <div class="insight-callout">
+              <div class="ic-title">⚡ Real-world connection</div>
+              The TU/e PhD project explicitly lists <strong>coexistence of classical telecom traffic and quantum signals</strong> as a core research topic, including noise, crosstalk, scalability, and interoperability in telecom-grade quantum networks.
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="layout">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-title">Fiber link budget</div>
+            <label class="hint" for="cx-qwl">Quantum wavelength</label>
+            <select id="cx-qwl">
+              <option value="1290">O-band 1290 nm</option>
+              <option value="1310" selected>O-band 1310 nm ← recommended</option>
+              <option value="1550">C-band 1550 nm ← noisy</option>
+              <option value="810">Visible 810 nm ← not telecom</option>
+            </select>
+            <div class="control">
+              <label for="cx-length">Fiber length<span class="hint">Distance shared by quantum and classical channels.</span></label>
+              <output class="control-output" id="cx-length-out">25 km</output>
+              <input type="range" id="cx-length" min="1" max="120" step="1" value="25" data-unit=" km">
+            </div>
+            <div class="control">
+              <label for="cx-power">Classical power/channel<span class="hint">Launch power of each C-band data channel.</span></label>
+              <output class="control-output" id="cx-power-out">0 dBm</output>
+              <input type="range" id="cx-power" min="-20" max="12" step="1" value="0" data-unit=" dBm">
+            </div>
+            <div class="control">
+              <label for="cx-wdm">WDM channels<span class="hint">More channels produce more Raman photons.</span></label>
+              <output class="control-output" id="cx-wdm-out">8</output>
+              <input type="range" id="cx-wdm" min="1" max="48" step="1" value="8">
+            </div>
+            <div class="control">
+              <label for="cx-filter">Filter bandwidth<span class="hint">Narrow filters reject Raman background photons.</span></label>
+              <output class="control-output" id="cx-filter-out">25 GHz</output>
+              <input type="range" id="cx-filter" min="5" max="200" step="5" value="25" data-unit=" GHz">
+            </div>
+            <div class="control">
+              <label for="cx-isolation">Classical isolation<span class="hint">Rejection of direct classical leakage at quantum receiver.</span></label>
+              <output class="control-output" id="cx-isolation-out">105 dB</output>
+              <input type="range" id="cx-isolation" min="70" max="140" step="5" value="105" data-unit=" dB">
+            </div>
+            <div class="control">
+              <label for="cx-detector">Detector efficiency<span class="hint">Higher efficiency boosts both signal and some noise counts.</span></label>
+              <output class="control-output" id="cx-detector-out">75%</output>
+              <input type="range" id="cx-detector" min="10" max="95" step="5" value="75" data-unit="%">
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Engineering assessment</div>
+            <div class="note" id="cx-assessment"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Signal counts</div><div class="metric-value" id="cx-m-signal">--</div><div class="metric-sub">counts/s</div></div>
+            <div class="metric"><div class="metric-label">Noise counts</div><div class="metric-value" id="cx-m-noise">--</div><div class="metric-sub">Raman + leakage + dark</div></div>
+            <div class="metric"><div class="metric-label">QBER</div><div class="metric-value" id="cx-m-qber">--</div><div class="metric-sub">optical errors + noise</div></div>
+            <div class="metric"><div class="metric-label">Secret key rate</div><div class="metric-value" id="cx-m-key">--</div><div class="metric-sub">BB84-style estimate</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Spectrum — classical WDM · quantum channel · Raman floor</div>
+            <canvas id="cx-spectrum" height="270" aria-label="WDM spectrum"></canvas>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Power scan — key rate vs classical launch power</div>
+            <canvas class="canvas-short" id="cx-scan-chart" height="220" aria-label="Power scan chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: GLOSSARY ══ -->
+    <section class="view" id="view-glossary">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Quick reference — 05</p>
+          <h2>Glossary of quantum networking</h2>
+          <p class="lede">Key terms, physical meanings, and the equations that govern them. Use this while running simulations to connect controls to their underlying physics.</p>
+        </div>
+      </div>
+      <div class="glossary-search">
+        <input type="text" id="glossary-input" placeholder="Search terms… e.g. QBER, Bell, fidelity, Raman" oninput="filterGlossary(this.value)">
+      </div>
+      <div class="glossary-grid" id="glossary-grid">
+
+        <div class="gcard" data-terms="qber quantum bit error rate error rate">
+          <div class="gcard-term">QBER — Quantum Bit Error Rate</div>
+          <div class="gcard-def">The fraction of sifted key bits where Bob's measurement disagrees with Alice's intended bit. Caused by optical misalignment, dark counts, and eavesdropping. The BB84 abort threshold is approximately 11% for one-way post-processing.</div>
+          <div class="gcard-formula">QBER = errors / sifted_bits_tested</div>
+        </div>
+
+        <div class="gcard" data-terms="sifting basis reconciliation">
+          <div class="gcard-term">Sifting</div>
+          <div class="gcard-def">After quantum transmission, Alice and Bob publicly announce which basis (Z or X) each used. Bits where they chose different bases are discarded because they carry no correlated information. Roughly 50% of pulses survive sifting in BB84.</div>
+        </div>
+
+        <div class="gcard" data-terms="privacy amplification compression secret key">
+          <div class="gcard-term">Privacy Amplification</div>
+          <div class="gcard-def">A classical hashing step that compresses the sifted key, removing any information that Eve might have learned. The surviving fraction is approximately max(0, 1 − 2h₂(QBER)) where h₂ is the binary entropy function.</div>
+          <div class="gcard-formula">f_secret ≈ max(0, 1 − 2·h₂(QBER))<br>h₂(p) = −p·log₂p − (1−p)·log₂(1−p)</div>
+        </div>
+
+        <div class="gcard" data-terms="no cloning theorem copy qubit">
+          <div class="gcard-term">No-cloning Theorem</div>
+          <div class="gcard-def">It is impossible to create an identical copy of an unknown quantum state. This is why quantum networks cannot amplify signals classically, and why eavesdropping always disturbs the quantum channel.</div>
+        </div>
+
+        <div class="gcard" data-terms="time-bin entanglement early late temporal mode">
+          <div class="gcard-term">Time-bin Entanglement</div>
+          <div class="gcard-def">Entanglement encoded in the arrival time of photons (early vs late time slots). Robust against polarization drift in fiber, making it preferred for metropolitan quantum networks and deployed fiber experiments.</div>
+        </div>
+
+        <div class="gcard" data-terms="franson interferometer interferometry visibility">
+          <div class="gcard-term">Franson Interferometer</div>
+          <div class="gcard-def">An unbalanced Mach-Zehnder interferometer used to measure time-bin entanglement. Two-photon coincidences vary sinusoidally with phase: C(φ) = C₀[1+V·cos(φ)]/2. The visibility V directly quantifies entanglement quality.</div>
+          <div class="gcard-formula">C(φ) = C₀[1 + V·cos(φ)] / 2</div>
+        </div>
+
+        <div class="gcard" data-terms="CHSH bell inequality violation S value">
+          <div class="gcard-term">CHSH Inequality &amp; Bell Test</div>
+          <div class="gcard-def">A statistical test of quantum non-locality. The CHSH parameter S = 2√2·V for ideal time-bin sources. Classical physics requires S ≤ 2. A measured S > 2 proves genuine quantum entanglement. Maximum quantum value is 2√2 ≈ 2.828.</div>
+          <div class="gcard-formula">S = 2√2 · V<br>Bell violation if S &gt; 2<br>Tsirelson bound: S ≤ 2√2</div>
+        </div>
+
+        <div class="gcard" data-terms="entanglement fidelity Werner state mixed">
+          <div class="gcard-term">Entanglement Fidelity</div>
+          <div class="gcard-def">Measures how close a distributed state is to a perfect Bell state. A fidelity of 1 is ideal; fidelity ≤ 0.5 means the state is not entangled at all. After multiple swaps and memory decoherence, fidelity degrades along the route.</div>
+          <div class="gcard-formula">F = (1 + V) / 2<br>F = 1 ideal, F ≤ 0.5 no entanglement</div>
+        </div>
+
+        <div class="gcard" data-terms="entanglement swapping BSM bell state measurement teleporter repeater">
+          <div class="gcard-term">Entanglement Swapping</div>
+          <div class="gcard-def">A Bell-state measurement (BSM) at an intermediate node "teleports" entanglement to the outer nodes, extending it without measuring the qubit value. Each swap probabilistically succeeds and reduces fidelity slightly.</div>
+          <div class="gcard-formula">F_swap ≈ F₁·F₂ + (1−F₁)·(1−F₂)/3<br>(simplified Werner-state model)</div>
+        </div>
+
+        <div class="gcard" data-terms="quantum memory decoherence coherence time lifetime">
+          <div class="gcard-term">Quantum Memory &amp; Decoherence</div>
+          <div class="gcard-def">Quantum memories store entangled qubits while heralding signals travel through the network. Qubits decay toward a mixed state exponentially with time constant τ. Long coherence times are a primary hardware challenge.</div>
+          <div class="gcard-formula">F(t) = 1/4 + (F₀ − 1/4)·exp(−t/τ)</div>
+        </div>
+
+        <div class="gcard" data-terms="purification distillation fidelity boost">
+          <div class="gcard-term">Entanglement Purification</div>
+          <div class="gcard-def">A protocol that takes multiple lower-fidelity entangled pairs and produces fewer higher-fidelity pairs by local operations and classical communication (LOCC). Improves quality at the cost of throughput.</div>
+        </div>
+
+        <div class="gcard" data-terms="raman scattering noise classical quantum coexistence fiber WDM">
+          <div class="gcard-term">Spontaneous Raman Scattering</div>
+          <div class="gcard-def">When strong classical light travels through silica fiber, it generates photons at shifted wavelengths via inelastic scattering. These appear as noise to the quantum detector. Raman noise scales with classical power and fiber length.</div>
+          <div class="gcard-formula">N_Raman ∝ P_classical · L_fiber · Δλ_filter</div>
+        </div>
+
+        <div class="gcard" data-terms="WDM wavelength division multiplexing C-band O-band telecom">
+          <div class="gcard-term">WDM — Wavelength Division Multiplexing</div>
+          <div class="gcard-def">Multiple classical data channels transmitted simultaneously at different wavelengths on the same fiber. C-band (1530–1565 nm) hosts most WDM traffic. O-band (1260–1360 nm) is used for quantum channels to reduce Raman overlap with C-band.</div>
+        </div>
+
+        <div class="gcard" data-terms="dark count detector single photon avalanche">
+          <div class="gcard-term">Dark Counts</div>
+          <div class="gcard-def">Spurious clicks from a single-photon detector in the absence of signal photons, caused by thermal electrons or afterpulsing. Dark counts create random bits in sifted keys and accidental coincidences in entanglement measurements.</div>
+        </div>
+
+        <div class="gcard" data-terms="BBM92 entanglement QKD E91 Ekert">
+          <div class="gcard-term">BBM92 Protocol</div>
+          <div class="gcard-def">An entanglement-based QKD protocol (Bennett, Brassard, Mermin 1992). Alice and Bob each receive one photon from an entangled pair, measure in random bases, and extract a secret key — equivalent to BB84 but using entanglement as the resource.</div>
+          <div class="gcard-formula">R_secret ≈ 0.5 · R_coinc · max(0, 1−2·h₂(QBER))</div>
+        </div>
+
+        <div class="gcard" data-terms="secret key rate throughput efficiency loss distance">
+          <div class="gcard-term">Secret Key Rate</div>
+          <div class="gcard-def">The net rate at which secret, secure bits are produced, after all error correction and privacy amplification. Drops exponentially with distance due to fiber loss. The practical goal of any deployed QKD system.</div>
+          <div class="gcard-formula">R = S_signal · max(0, 1 − 2·h₂(QBER)) / 2</div>
+        </div>
+
+        <div class="gcard" data-terms="heralding entanglement generation probability link">
+          <div class="gcard-term">Heralded Entanglement Generation</div>
+          <div class="gcard-def">Entanglement between two nodes is confirmed by a classical signal (the "herald") indicating success. The generation probability per attempt drops with distance due to fiber loss and BSM success probability.</div>
+          <div class="gcard-formula">P_link ≈ η² · P_BSM<br>η = 10^(−α·L/10)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: MANUAL ══ -->
+    <section class="view" id="view-manual">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Operations manual — 06</p>
+          <h2>How to run the Quantum Network Lab</h2>
+          <p class="lede">A practical guide explaining the workflow, what each button does, and how to interpret the outputs. Start here if you're new to the simulator.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="manual-open-all" type="button">Open all sections</button>
+        </div>
+      </div>
+
+      <div class="learning-path">
+        <div class="path-step"><strong>1. Choose a lab</strong><span>Pick a simulation from the sidebar. The active section is highlighted and the status pill confirms the current state.</span></div>
+        <div class="path-step"><strong>2. Read the explainer</strong><span>Each lab has a collapsible concept panel at the top. Expand it for a first-principles explanation and suggested experiments.</span></div>
+        <div class="path-step"><strong>3. Move controls &amp; run</strong><span>Changed sliders glow to show which parameters you touched. Press the primary button to simulate, or use scan/burst buttons for sweeps.</span></div>
+        <div class="path-step"><strong>4. Interpret &amp; export</strong><span>Metrics update with colour-coded pass/warn/fail states. Use the Glossary (Lab 05) to look up any term. Export a JSON report from the top bar.</span></div>
+      </div>
+
+      <div class="manual-grid">
+        <div>
+          <details class="accordion" open>
+            <summary>Recommended learning path</summary>
+            <div class="details-body">
+              <p>Start with BB84 and run the protocol. Then change one parameter at a time: distance, detector efficiency, dark counts, optical misalignment, Eve intercept probability. Run Monte Carlo to see statistical variation.</p>
+              <div class="formula">Suggested order:
+1. BB84 → learn sifting, QBER, privacy amplification
+2. Time-bin pairs → visibility, Bell violation, BBM92 key rate
+3. Routing → entanglement swapping, quantum memories, path choice
+4. Fiber coexistence → Raman noise, wavelength selection, WDM power
+5. Glossary → look up any terms you encountered
+6. Study Notes → detailed model equations for every parameter</div>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>BB84 model — equations and assumptions</summary>
+            <div class="details-body">
+              <p>Alice randomly chooses bits and bases Z/X. Bob randomly chooses measurement bases. Bits are kept only when Alice and Bob used the same basis and Bob registered a detection. Eve is modelled as an intercept-resend attack.</p>
+              <div class="formula">Channel transmission:
+T = 10^(−α·L / 10) · η_detector
+
+Click probability per pulse:
+P_click = T + P_dark − T·P_dark
+
+Sifting:
+keep bit i if Bob clicked AND basis_A[i] = basis_B[i]
+
+Sampled QBER:
+Q = sample_errors / sample_size
+
+Secret fraction (asymptotic teaching estimate):
+f = max(0, 1 − 2·h₂(Q))</div>
+              <div class="insight-callout">
+                <div class="ic-title">Model limits</div>
+                The 11% abort threshold is the approximate one-way post-processing limit for idealised BB84. Real systems need <strong>decoy-state analysis, finite-key bounds, detector characterisation, and authentication</strong>.
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>Time-bin entanglement model</summary>
+            <div class="details-body">
+              <p>Time-bin entanglement uses early/late photon arrival modes. A Franson interferometer converts phase coherence into two-photon interference fringes. Strong visibility supports Bell violation and entanglement-based QKD such as BBM92.</p>
+              <div class="formula">Arm transmission:
+T_arm = 10^(−α·L/2 / 10) · 0.78
+
+Signal coincidences:
+C_signal = R_pairs · T_arm²
+
+Accidental coincidences:
+C_acc = (R_singles)² · τ_window
+
+Franson fringe:
+C(φ) = C₀·[1 + V·cos(φ)] / 2
+
+Effective visibility:
+V = V_intrinsic · exp(−σ²φ/2) · V_multipair · V_noise
+
+CHSH S-value:
+S = 2√2·V   (Bell violated if S > 2)</div>
+            </div>
+          </details>
+        </div>
+
+        <div>
+          <details class="accordion">
+            <summary>Routing and swapping model</summary>
+            <div class="details-body">
+              <p>Quantum repeaters cannot copy qubits. Instead, neighbouring links first generate entanglement. Bell-state measurements at intermediate nodes perform entanglement swapping, extending entanglement across the route.</p>
+              <div class="formula">Route cost metric:
+cost(edge) = −log(P_success · F_link)
+
+Swap fidelity update (Werner-state):
+F_swap ≈ F₁·F₂ + (1−F₁)·(1−F₂)/3
+
+Memory decay:
+F(t) = 1/4 + (F₀ − 1/4)·exp(−t/τ)
+
+Route success probability:
+P_route = ∏ P_link × ∏ P_BSM
+
+Throughput:
+R ≈ R_attempt · P_route</div>
+              <p>Purification improves fidelity but consumes additional entangled pairs, so the simulator lowers throughput when purification is enabled.</p>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>Coexistence model — Raman noise budget</summary>
+            <div class="details-body">
+              <p>Classical C-band WDM channels share fiber with quantum channels. Spontaneous Raman scattering and direct leakage create detector noise counts that increase QBER. O-band quantum channels reduce Raman overlap with C-band traffic, but O-band has higher fiber attenuation than C-band.</p>
+              <div class="formula">Raman noise rate:
+N_Raman ∝ P_classical · N_WDM · L · Δλ_filter / isolation
+
+Total noise:
+N_total = N_Raman + N_leakage + N_dark
+
+QBER:
+Q = Q_optical + 0.5 · N_total / (S_signal + N_total)
+
+Key rate:
+R_secret = 0.5 · S_signal · max(0, 1 − 2·h₂(Q))</div>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>Model limits and reproducibility</summary>
+            <div class="details-body">
+              <p>This lab is rigorous as an educational simulator: formulas are explicit, assumptions are logged, controls are reproducible, and every parameter has a documented physical meaning.</p>
+              <div class="formula">Not included in this simulator:
+- Decoy-state analysis for weak coherent pulse BB84
+- Finite-key security confidence intervals
+- Detector side-channel attacks
+- Full polarization drift control loops
+- Calibrated Raman spectra from measured fiber data
+- Asynchronous event queues for heralding scheduling
+- Device-independent security proofs</div>
+              <p>The seed control in BB84 makes runs fully reproducible. The JSON export stores numerical parameters for all labs.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: STUDY NOTES ══ -->
+    <section class="view" id="view-notes">
+      <div class="view-header">
+        <div>
+          <p class="eyebrow">Study notes — 07</p>
+          <h2>Simulation theory, controls, and result interpretation</h2>
+          <p class="lede">A detailed reference for the physics and computation behind each lab. Use it while running simulations — every control is mapped to its physical meaning and expected effect.</p>
+        </div>
+        <div class="row">
+          <button class="button primary" id="notes-open-all" type="button">Open all notes</button>
+        </div>
+      </div>
+
+      <div class="mini-index">
+        <a href="#notes-bb84">BB84</a>
+        <a href="#notes-timebin">Time-bin / BBM92</a>
+        <a href="#notes-routing">Routing</a>
+        <a href="#notes-coexist">Fiber coexistence</a>
+        <a href="#notes-report">Session reports</a>
+        <a href="#notes-refs">Key references</a>
+      </div>
+
+      <details class="accordion" id="notes-bb84" open>
+        <summary>BB84 QKD: protocol, controls, metrics</summary>
+        <div class="details-body">
+          <p>BB84 uses incompatible quantum bases to detect disturbance. Alice prepares random bits in the rectilinear Z basis or diagonal X basis. Bob measures in randomly selected bases. After transmission, Alice and Bob publicly reveal bases, discard mismatches, reveal a sample of remaining bits, and estimate the quantum bit error rate.</p>
+          <div class="formula">T_channel = 10^(−α·L / 10)
+P_click ≈ T_channel · η_detector + P_dark
+keep if Bob clicked AND basis_A = basis_B
+Q_sample = sample_errors / sample_size
+f_secret = max(0, 1 − 2·h₂(Q_sample))</div>
+          <table class="study-table">
+            <thead><tr><th>Control</th><th>Physical meaning</th><th>Effect when increased</th></tr></thead>
+            <tbody>
+              <tr><td>Quantum pulses</td><td>Number of prepared qubits in one run.</td><td>More stable statistics and longer raw keys.</td></tr>
+              <tr><td>Fiber distance</td><td>Length of lossy optical fiber (α = 0.2 dB/km assumed).</td><td>Fewer detections, shorter sifted key, larger statistical fluctuation.</td></tr>
+              <tr><td>Detector efficiency</td><td>Probability that an arriving photon produces a click.</td><td>More detections and longer keys.</td></tr>
+              <tr><td>Optical misalignment</td><td>Intrinsic bit-flip probability from imperfect preparation/measurement.</td><td>Higher QBER and eventual abort.</td></tr>
+              <tr><td>Dark count probability</td><td>Background click probability per detection gate.</td><td>Random bits enter the sifted key, raising QBER.</td></tr>
+              <tr><td>Eve intercept-resend</td><td>Probability that Eve measures and resends each pulse.</td><td>Wrong-basis measurements disturb states and raise QBER by ~25% of intercepted fraction.</td></tr>
+              <tr><td>Public test sample</td><td>Fraction of sifted bits revealed to estimate QBER.</td><td>Better error estimate but fewer unrevealed bits remain for the final key.</td></tr>
+              <tr><td>Seed</td><td>Random seed for reproducible runs.</td><td>Changing it gives a different statistical trial with the same physical settings.</td></tr>
+            </tbody>
+          </table>
+          <p><strong>Audit table:</strong> kept rows mean Alice and Bob used the same basis. Amber-edged sample rows are publicly revealed and cannot remain secret. Error rows mark kept bits where Bob's bit differs from Alice's.</p>
+        </div>
+      </details>
+
+      <details class="accordion" id="notes-timebin">
+        <summary>Time-bin entanglement and BBM92: source, CHSH, key rate</summary>
+        <div class="details-body">
+          <p>Time-bin entanglement uses early/late photon arrival modes. It is robust in fiber because timing is easier to preserve than polarization over long deployed links. A Franson interferometer measures two-photon interference; the visibility of the sinusoidal fringe is a direct indicator of phase coherence.</p>
+          <div class="formula">C(φ) = C₀·[1 + V·cos(φ)] / 2
+S_CHSH = 2√2·V   (Bell violated if S > 2)
+Q ≈ (1 − V_eff)/2 + accidental_noise_term
+R_secret ≈ 0.5 · C_signal · max(0, 1 − 2·h₂(Q))</div>
+          <table class="study-table">
+            <thead><tr><th>Control</th><th>Physical meaning</th><th>Effect when increased</th></tr></thead>
+            <tbody>
+              <tr><td>Pair generation rate</td><td>Entangled photon pairs emitted per second.</td><td>More coincidences, but excessive rate creates multipair visibility penalties.</td></tr>
+              <tr><td>End-to-end span</td><td>Total fiber distance between users.</td><td>Coincidences drop roughly with T² (two-arm transmission product).</td></tr>
+              <tr><td>Intrinsic visibility</td><td>Source/interferometer contrast before channel noise.</td><td>Higher CHSH S-value, lower QBER, higher secret key rate.</td></tr>
+              <tr><td>Phase noise</td><td>RMS phase instability in the interferometers.</td><td>Washes out the Franson fringe and can remove Bell violation.</td></tr>
+              <tr><td>Dark counts</td><td>Detector background count rate per detector.</td><td>Raises accidental coincidences and QBER.</td></tr>
+              <tr><td>Coincidence window</td><td>Timing gate used to pair detections.</td><td>Wider windows admit more accidentals; shorter windows require better timing hardware.</td></tr>
+              <tr><td>Telecom band</td><td>Assumed wavelength and fiber attenuation coefficient.</td><td>Changes loss and therefore coincidence rate; O-band has better coexistence with WDM.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="accordion" id="notes-routing">
+        <summary>Entanglement routing: topology, swapping, memories, purification</summary>
+        <div class="details-body">
+          <p>A multi-node quantum network does not route unknown qubits by copying them. It establishes entangled links between neighbouring nodes, performs Bell-state measurements at intermediate nodes (entanglement swapping), and uses classical heralding signals to confirm successes.</p>
+          <div class="formula">Edge cost: cost = −log(P_success · F_link)
+Werner-state swap: F_swap ≈ F₁·F₂ + (1−F₁)·(1−F₂)/3
+Memory decay: F(t) = 1/4 + (F₀ − 1/4)·exp(−t/τ)
+Route P_success = ∏ₑ P_link(e) × ∏ᵥ P_BSM(v)
+Throughput R ≈ R_attempt · P_success</div>
+          <table class="study-table">
+            <thead><tr><th>Control</th><th>Physical meaning</th><th>Effect when increased</th></tr></thead>
+            <tbody>
+              <tr><td>Topology preset</td><td>Network graph for route selection.</td><td>Changes path redundancy, hop count, and available backup routes.</td></tr>
+              <tr><td>Nodes</td><td>Alice + Bob + repeater/switching nodes.</td><td>More potential paths but more swaps and storage delays.</td></tr>
+              <tr><td>Mean link length</td><td>Typical fiber span between neighbours.</td><td>Lower heralding probability and lower link fidelity.</td></tr>
+              <tr><td>Raw link fidelity</td><td>Quality of directly generated Bell pairs.</td><td>Higher end-to-end fidelity after swapping.</td></tr>
+              <tr><td>Memory lifetime</td><td>Coherence time τ of quantum memories.</td><td>Less decoherence during heralding and swapping.</td></tr>
+              <tr><td>BSM success</td><td>Probability a Bell-state measurement succeeds.</td><td>Higher route success probability and throughput.</td></tr>
+              <tr><td>Purification rounds</td><td>Fidelity-boosting operations consuming extra pairs.</td><td>Better fidelity, lower throughput.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="accordion" id="notes-coexist">
+        <summary>Fiber coexistence: WDM traffic, Raman noise, filtering, QBER</summary>
+        <div class="details-body">
+          <p>Classical C-band WDM channels can share fiber with quantum channels, but spontaneous Raman scattering and direct leakage create detector noise counts that increase QBER. O-band quantum channels often reduce Raman overlap with C-band classical traffic, but O-band has higher fiber attenuation (0.35 dB/km vs 0.20 dB/km at C-band).</p>
+          <div class="formula">N_total = N_Raman + N_leakage + N_dark
+Q = Q_optical + 0.5 · N_total / (S_signal + N_total)
+R_secret = 0.5 · S_signal · max(0, 1 − 2·h₂(Q))</div>
+          <table class="study-table">
+            <thead><tr><th>Control</th><th>Physical meaning</th><th>Effect when increased</th></tr></thead>
+            <tbody>
+              <tr><td>Quantum wavelength</td><td>Band used for quantum photons.</td><td>O-band separates quantum from C-band WDM traffic; C-band has lower loss but more Raman overlap.</td></tr>
+              <tr><td>Fiber length</td><td>Shared fiber span.</td><td>Signal attenuates and Raman accumulation grows.</td></tr>
+              <tr><td>Classical power/channel</td><td>Launch power of each WDM data channel.</td><td>Higher Raman and leakage noise counts.</td></tr>
+              <tr><td>WDM channels</td><td>Number of classical data channels.</td><td>More total launched classical power and proportionally more Raman noise.</td></tr>
+              <tr><td>Filter bandwidth</td><td>Quantum receiver optical passband.</td><td>Wider filters admit more Raman photons.</td></tr>
+              <tr><td>Classical isolation</td><td>Rejection of direct classical leakage.</td><td>Higher isolation lowers leakage noise — the primary engineering mitigation.</td></tr>
+              <tr><td>Detector efficiency</td><td>Single-photon detection efficiency.</td><td>Raises signal counts and some detector-side noise terms proportionally.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="accordion" id="notes-report">
+        <summary>Session reports and reproducibility</summary>
+        <div class="details-body">
+          <p>Every main simulation button adds a concise entry to the session report. The JSON export stores the latest numerical state of all labs and can be used for comparing settings across runs.</p>
+          <div id="report-list" class="report-list"></div>
+        </div>
+      </details>
+
+      <details class="accordion" id="notes-refs">
+        <summary>Key references and further reading</summary>
+        <div class="details-body">
+          <p>These are the foundational papers and deployments that the simulator is designed to help you understand.</p>
+          <div class="ref-grid">
+            <div class="ref-card">
+              <div class="ref-tag tag-protocol">Protocol</div>
+              <h4>Bennett &amp; Brassard (1984)</h4>
+              <p>BB84 — the original quantum key distribution protocol. Defines prepare-and-measure QKD using non-orthogonal quantum states.</p>
+            </div>
+            <div class="ref-card">
+              <div class="ref-tag tag-protocol">Protocol</div>
+              <h4>Bennett, Brassard &amp; Mermin (1992)</h4>
+              <p>BBM92 — entanglement-based extension of BB84. Alice and Bob each measure one photon from an entangled pair.</p>
+            </div>
+            <div class="ref-card">
+              <div class="ref-tag tag-theory">Theory</div>
+              <h4>Franson (1989)</h4>
+              <p>Proposed the time-bin entanglement scheme and the unbalanced Mach-Zehnder (Franson) interferometer for testing Bell inequalities with photon pairs.</p>
+            </div>
+            <div class="ref-card">
+              <div class="ref-tag tag-theory">Theory</div>
+              <h4>Briegel et al. (1998)</h4>
+              <p>Quantum repeaters — the foundational paper for entanglement swapping and purification as a means of extending quantum communication distance.</p>
+            </div>
+            <div class="ref-card">
+              <div class="ref-tag tag-experiment">Experiment</div>
+              <h4>Wengerowsky et al. (2020)</h4>
+              <p>Entanglement distribution over metropolitan fiber in real deployed networks (Vienna), demonstrating O-band time-bin entanglement in urban infrastructure.</p>
+            </div>
+            <div class="ref-card">
+              <div class="ref-tag tag-experiment">Experiment</div>
+              <h4>KPN / TU Delft (2022)</h4>
+              <p>First deployed metropolitan quantum network (Delft–Hague–Rotterdam). Uses time-bin entanglement at 1310 nm coexisting with classical C-band WDM traffic on KPN's fiber.</p>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <div class="foot">
+      <strong style="color:var(--muted)">Quantum Network Lab</strong> — self-contained educational simulator.<br>
+      Covers BB84 QKD · Time-bin entanglement (Franson/BBM92) · Multi-node routing with swapping &amp; purification · Classical–quantum fiber coexistence.<br>
+      Models are transparent educational approximations; all assumptions and formulas are documented in the Manual and Study Notes.
+    </div>
+  </main>
+</div><!-- end .app -->
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+// ── HERO CANVAS ──────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('hero-canvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let W, H, nodes, edges, animFrame;
+
+  function resize() {
+    W = cv.width  = cv.offsetWidth;
+    H = cv.height = cv.offsetHeight;
+    init();
+  }
+
+  function init() {
+    const N = Math.min(60, Math.floor(W * H / 18000));
+    nodes = Array.from({length: N}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - .5) * .28,
+      vy: (Math.random() - .5) * .28,
+      r: 1.5 + Math.random() * 2.5,
+      pulse: Math.random() * Math.PI * 2,
+      hue: Math.random() < .5 ? 'cyan' : (Math.random() < .5 ? 'blue' : 'violet')
+    }));
+    edges = [];
+  }
+
+  const COLORS = {
+    cyan:   {line: 'rgba(54,223,200,', dot: '#36dfc8'},
+    blue:   {line: 'rgba(91,163,255,', dot: '#5ba3ff'},
+    violet: {line: 'rgba(168,134,255,', dot: '#a886ff'}
+  };
+
+  function frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    edges = [];
+
+    nodes.forEach((n, i) => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < -20) n.x = W + 20;
+      if (n.x > W+20) n.x = -20;
+      if (n.y < -20) n.y = H + 20;
+      if (n.y > H+20) n.y = -20;
+      n.pulse += .015;
+
+      // find close neighbours
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[j].x - n.x, dy = nodes[j].y - n.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 140) edges.push({a: n, b: nodes[j], d: dist});
+      }
+    });
+
+    // draw edges
+    edges.forEach(e => {
+      const alpha = (1 - e.d/140) * .22;
+      ctx.beginPath();
+      ctx.moveTo(e.a.x, e.a.y);
+      ctx.lineTo(e.b.x, e.b.y);
+      const col = COLORS[e.a.hue] || COLORS.cyan;
+      ctx.strokeStyle = col.line + alpha + ')';
+      ctx.lineWidth = .8;
+      ctx.stroke();
+    });
+
+    // draw nodes
+    nodes.forEach(n => {
+      const glow = .5 + .5 * Math.sin(n.pulse);
+      const col = COLORS[n.hue] || COLORS.cyan;
+      // outer glow
+      const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 6);
+      grad.addColorStop(0, col.line + (.12 * glow) + ')');
+      grad.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 6, 0, Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // core dot
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * (1 + .3*glow), 0, Math.PI*2);
+      ctx.fillStyle = col.dot;
+      ctx.globalAlpha = .6 + .3*glow;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    animFrame = requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  animFrame = requestAnimationFrame(frame);
+})();
+
+// ── HERO NAVIGATION ──────────────────────────────────────
+function enterLab(view) {
+  const lab = document.getElementById('lab-app');
+  lab.scrollIntoView({behavior: 'smooth'});
+  if (view && view !== 'manual') {
+    setTimeout(() => switchView(view), 400);
+  } else if (view === 'manual') {
+    setTimeout(() => switchView('manual'), 400);
+  }
+}
+
+// ── CONCEPT STRIP CLICK ──────────────────────────────────
+document.querySelectorAll('.concept-cell').forEach(cell => {
+  cell.addEventListener('click', () => {
+    enterLab(cell.getAttribute('onclick')?.match(/'(\w+)'/)?.[1]);
+  });
+});
+
+// ── GLOSSARY FILTER ──────────────────────────────────────
+function filterGlossary(q) {
+  const lq = q.toLowerCase().trim();
+  document.querySelectorAll('.gcard').forEach(card => {
+    const terms = (card.dataset.terms || '') + ' ' + card.textContent;
+    card.classList.toggle('hidden', lq.length > 1 && !terms.toLowerCase().includes(lq));
+  });
+}
+
+// ── PROGRESS TRACKING ────────────────────────────────────
+const completedLabs = new Set();
+function markDone(labId) {
+  if (completedLabs.has(labId)) return;
+  completedLabs.add(labId);
+  const el = document.getElementById('done-' + labId);
+  if (el) el.style.display = 'inline';
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────
+function switchView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+  const view = document.getElementById('view-' + id);
+  if (view) view.classList.add('active');
+  const btn = document.querySelector(`[data-view="${id}"]`);
+  if (btn) btn.classList.add('active');
+  window.scrollTo({top: document.getElementById('lab-app').offsetTop - 10, behavior: 'smooth'});
+}
+document.querySelectorAll('.nav-button[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ── STATUS ────────────────────────────────────────────────
+const statusEl = document.getElementById('run-status');
+function setStatus(s) { if(statusEl) statusEl.textContent = s; }
+
+// ════════════════════════════════════════════════════════
+//  QNL NAMESPACE  — separates Physics | UI | Charts
+//  Extend here when adding E91, decoy-state BB84, etc.
+// ════════════════════════════════════════════════════════
+const QNL = {
+  // ── Physics engine registry ───────────────────────────
+  // Each protocol registers itself here so the resize /
+  // reset system can call it without knowing internals.
+  physics: {
+    // id → { run(silent), lastArgs }
+    _registry: {},
+    register(id, runFn) { this._registry[id] = { run: runFn }; },
+    runAll(silent=true) {
+      Object.values(this._registry).forEach(p => { try { p.run(silent); } catch(e){} });
+    }
+  },
+
+  // ── Chart registry ────────────────────────────────────
+  // Tracks the last drawn state of every canvas so resize
+  // can redraw them without re-running physics.
+  charts: {
+    _store: {},   // canvasId → { fn, args }
+    save(id, fn, args) { this._store[id] = {fn, args}; },
+    redraw(id) {
+      const entry = this._store[id];
+      if (entry) { try { entry.fn(...entry.args); } catch(e){} }
+    },
+    redrawAll() {
+      Object.keys(this._store).forEach(id => this.redraw(id));
+    }
+  },
+
+  // ── UI helpers ────────────────────────────────────────
+  ui: {
+    formatValue(el) {
+      const out  = document.getElementById(el.id + '-out') ||
+                   document.querySelector(`output[for="${el.id}"]`);
+      const unit = el.dataset.unit || '';
+      if (!out) return;
+      const v = parseFloat(el.value);
+      const decimals = parseFloat(el.step) < 1 ? 1 : 0;
+      out.textContent = decimals ? v.toFixed(decimals) + unit : v + unit;
+    },
+    injectSteppers() {
+      document.querySelectorAll('.control input[type="range"]').forEach(el => {
+        // Wrap slider in stepper-row div
+        const row = document.createElement('div');
+        row.className = 'stepper-row';
+        el.parentNode.insertBefore(row, el);
+        const btnDec = document.createElement('button');
+        btnDec.type = 'button';
+        btnDec.className = 'step-btn';
+        btnDec.textContent = '−';
+        btnDec.setAttribute('aria-label', 'decrease ' + el.id);
+        const btnInc = document.createElement('button');
+        btnInc.type = 'button';
+        btnInc.className = 'step-btn';
+        btnInc.textContent = '+';
+        btnInc.setAttribute('aria-label', 'increase ' + el.id);
+        row.appendChild(btnDec);
+        row.appendChild(el);   // move slider into row
+        row.appendChild(btnInc);
+
+        const step = () => parseFloat(el.step) || 1;
+        const nudge = (dir) => {
+          const next = parseFloat(el.value) + dir * step();
+          el.value = Math.max(+el.min, Math.min(+el.max, next));
+          el.dispatchEvent(new Event('input', {bubbles: true}));
+        };
+        // Support hold-to-repeat
+        let holdTimer;
+        const startHold = (dir) => {
+          nudge(dir);
+          holdTimer = setTimeout(() => {
+            holdTimer = setInterval(() => nudge(dir), 80);
+          }, 400);
+        };
+        const stopHold = () => { clearTimeout(holdTimer); clearInterval(holdTimer); };
+        btnDec.addEventListener('pointerdown', () => startHold(-1));
+        btnInc.addEventListener('pointerdown', () => startHold(+1));
+        ['pointerup','pointerleave','pointercancel'].forEach(ev => {
+          btnDec.addEventListener(ev, stopHold);
+          btnInc.addEventListener(ev, stopHold);
+        });
+      });
+    }
+  }
+};
+
+// ── CONTROL WIRING ────────────────────────────────────────
+// First inject +/- steppers into every .control range input
+QNL.ui.injectSteppers();
+
+document.querySelectorAll('input[type="range"]').forEach(el => {
+  function upd() {
+    QNL.ui.formatValue(el);
+    el.closest('.control')?.classList.add('is-touched');
+  }
+  el.addEventListener('input', upd);
+  upd();
+});
+document.querySelectorAll('select, input[type="number"]').forEach(el => {
+  el.addEventListener('change', () => el.classList.add('is-touched'));
+});
+document.getElementById('btn-reset-all')?.addEventListener('click', () => {
+  document.querySelectorAll('.is-touched').forEach(e => e.classList.remove('is-touched'));
+  document.querySelectorAll('input[type="range"]').forEach(el => {
+    el.value = el.defaultValue;
+    QNL.ui.formatValue(el);
+  });
+  showToast('Lab reset to defaults.');
+});
+
+// ── UTILS ─────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function h2(p) {
+  p = Math.max(1e-12, Math.min(1-1e-12, p));
+  return -p*Math.log2(p) - (1-p)*Math.log2(1-p);
+}
+function fmtRate(x) {
+  if (x >= 1e6) return (x/1e6).toFixed(2)+' Mbps';
+  if (x >= 1e3) return (x/1e3).toFixed(1)+' kbps';
+  return x.toFixed(0)+' bps';
+}
+function fmtHz(x) {
+  if (x >= 1e6) return (x/1e6).toFixed(2)+' MHz';
+  if (x >= 1e3) return (x/1e3).toFixed(1)+' kHz';
+  return x.toFixed(1)+' Hz';
+}
+function colourClass(v, good, warn) {
+  return v >= good ? 'good' : v >= warn ? 'warn-text' : 'bad';
+}
+function setMetric(id, val, cls) {
+  const el = $(id); if (!el) return;
+  el.textContent = val;
+  el.className = 'metric-value' + (cls ? ' ' + cls : '');
+  const card = el.closest('.metric');
+  if (card) { card.classList.add('updated'); setTimeout(() => card.classList.remove('updated'), 700); }
+}
+function appendLog(logId, lines) {
+  const el = $(logId); if (!el) return;
+  el.innerHTML = lines.map(l => `<span class="log-line">${l}</span>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function logLine(type, text) {
+  const colors = { ok:'#5dd98a', info:'#5ba3ff', warn:'#ffbe44', err:'#ff5f70', dim:'#4e6278' };
+  return `<span style="color:${colors[type]||colors.dim}">${text}</span>`;
+}
+
+// Session reports store
+const reports = [];
+function addReport(label, summary) {
+  reports.unshift({ label, summary, ts: new Date().toLocaleTimeString() });
+  renderReports();
+  markDone(label.split('-')[0]);
+}
+function renderReports() {
+  const el = $('report-list'); if (!el) return;
+  if (!reports.length) { el.innerHTML = '<p style="color:var(--dim);font-size:13px">No runs yet. Execute a simulation to see session history.</p>'; return; }
+  el.innerHTML = reports.slice(0, 20).map(r =>
+    `<div class="report-item"><strong>${r.label}</strong><span>${r.ts} — ${r.summary}</span></div>`
+  ).join('');
+}
+renderReports();
+
+// ── CANVAS HELPERS ────────────────────────────────────────
+function canvasSetup(id) {
+  const cv = $(id); if (!cv) return null;
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = (cv.offsetWidth  || 600) * dpr;
+  cv.height = (cv.offsetHeight || 220) * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = cv.offsetWidth || 600;
+  const H = cv.offsetHeight || 220;
+  ctx.clearRect(0, 0, W, H);
+  return { ctx, W, H };
+}
+function drawGrid(ctx, W, H, pad={l:44,r:16,t:16,b:36}) {
+  ctx.strokeStyle = 'rgba(255,255,255,.06)';
+  ctx.lineWidth = .5;
+  for (let x = pad.l; x <= W-pad.r; x += (W-pad.l-pad.r)/5) {
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H-pad.b); ctx.stroke();
+  }
+  for (let y = pad.t; y <= H-pad.b; y += (H-pad.t-pad.b)/4) {
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.18)';
+  ctx.lineWidth = .8;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H-pad.b); ctx.lineTo(W-pad.r, H-pad.b); ctx.stroke();
+}
+
+// seeded RNG
+function seededRNG(seed) {
+  let s = seed >>> 0;
+  return () => { s ^= s<<13; s ^= s>>17; s ^= s<<5; return (s>>>0)/4294967296; };
+}
+
+// ════════════════════════════════════════════════════════
+//  BB84 SIMULATION
+// ════════════════════════════════════════════════════════
+function runBB84(showToastMsg = true) {
+  setStatus('running bb84…');
+  const rng    = seededRNG(+($('bb84-seed')?.value || 42));
+  const nPulse = +($('bb84-pulses')?.value  || 256);
+  const dist   = +($('bb84-distance')?.value || 20);
+  const detEff = +($('bb84-detector')?.value || 70) / 100;
+  const optErr = +($('bb84-error')?.value   || 2)  / 100;
+  const darkP  = +($('bb84-dark')?.value    || 0.1)/ 100;
+  const evePct = +($('bb84-eve')?.value     || 0)  / 100;
+  const sampleF= +($('bb84-sample')?.value  || 20) / 100;
+  const alpha  = 0.20; // dB/km
+
+  const T      = Math.pow(10, -alpha*dist/10);
+  const pClick = T*detEff + darkP - T*detEff*darkP;
+
+  let detected=0, sifted=0, siftedBits=[], siftedBitsB=[], rows=[];
+
+  for (let i=0; i<nPulse; i++) {
+    const aBit   = rng() < .5 ? 0 : 1;
+    const aBasis = rng() < .5 ? 0 : 1; // 0=Z 1=X
+    const bBasis = rng() < .5 ? 0 : 1;
+
+    // photon lost?
+    if (rng() > pClick) {
+      rows.push({i, aBit, aBasis, bBasis, bBit:null, event:'lost'});
+      continue;
+    }
+    detected++;
+
+    // Eve intercept-resend
+    let transmitted = aBit;
+    if (rng() < evePct) {
+      const eBasis = rng() < .5 ? 0 : 1;
+      const eMeas  = (eBasis === aBasis) ? aBit : (rng() < .5 ? 0 : 1);
+      transmitted  = (eBasis === aBasis) ? eMeas : (rng() < .5 ? 0 : 1);
+    }
+
+    // optical misalignment
+    let bBit = transmitted;
+    if (rng() < optErr) bBit ^= 1;
+    // dark count noise
+    if (rng() < darkP / (pClick || .001)) bBit = rng() < .5 ? 0 : 1;
+
+    if (aBasis === bBasis) {
+      sifted++;
+      siftedBits.push(aBit);
+      siftedBitsB.push(bBit);
+      rows.push({i, aBit, aBasis, bBasis, bBit, event:'keep'});
+    } else {
+      rows.push({i, aBit, aBasis, bBasis, bBit, event:'discard'});
+    }
+  }
+
+  const nSample = Math.max(1, Math.round(sifted * sampleF));
+  const sampleIdx = new Set();
+  while (sampleIdx.size < Math.min(nSample, sifted)) sampleIdx.add(Math.floor(rng()*sifted));
+  let sampleErrors = 0;
+  sampleIdx.forEach(idx => { if (siftedBits[idx] !== siftedBitsB[idx]) sampleErrors++; });
+  const qber = nSample > 0 ? sampleErrors / nSample : 0;
+  const secretFrac = Math.max(0, 1 - 2*h2(qber));
+  const remaining  = sifted - nSample;
+  const finalKey   = Math.round(remaining * secretFrac);
+  const abort      = qber > .11;
+
+  // metrics
+  setMetric('bb84-m-detected', detected, colourClass(detected/nPulse, .4, .15));
+  setMetric('bb84-m-sifted',   sifted,   colourClass(sifted/nPulse, .3, .1));
+  setMetric('bb84-m-qber',     (qber*100).toFixed(2)+'%', abort?'bad': qber>.05?'warn-text':'good');
+  setMetric('bb84-m-final',    abort ? 'ABORT' : finalKey, abort?'bad': finalKey>0?'good':'warn-text');
+
+  // stages
+  renderStages([
+    {label:'Pulse prep', sub: nPulse+' qubits', ok:true},
+    {label:'Transmission', sub: (pClick*100).toFixed(1)+'% P(click)', ok: pClick>.05},
+    {label:'Sifting', sub: sifted+' bits kept', ok: sifted>10},
+    {label:'QBER check', sub: (qber*100).toFixed(2)+'%', ok: !abort, abort},
+    {label: abort ? 'KEY ABORTED' : 'Key accepted', sub: abort ? 'QBER > 11%' : finalKey+' secret bits', ok: !abort, abort}
+  ]);
+
+  // table
+  const tbody = $('bb84-table'); if (tbody) {
+    const shown = rows.filter(r => r.event !== 'lost').slice(0, 96);
+    tbody.innerHTML = shown.map(r => {
+      const isSample = r.event==='keep' && sampleIdx.has(sifted - shown.filter((x,ri)=>ri<=shown.indexOf(r)&&x.event==='keep').length);
+      const isErr = r.event==='keep' && r.aBit !== r.bBit;
+      const cls = r.event==='keep'?(isErr?'error':'keep'):'';
+      return `<tr class="${cls}${isSample?' sample':''}">
+        <td>${r.i}</td>
+        <td><span class="chip">${r.aBit}</span></td>
+        <td><span class="chip ${r.aBasis?'x':'z'}">${r.aBasis?'X':'Z'}</span></td>
+        <td><span class="chip ${r.bBasis?'x':'z'}">${r.bBasis?'X':'Z'}</span></td>
+        <td>${r.bBit!==null?`<span class="chip">${r.bBit}</span>`:'—'}</td>
+        <td style="color:${r.event==='keep'?(isErr?'var(--red)':'var(--green)'):'var(--dim)'}">${r.event==='keep'?(isErr?'✗ error':'✓ keep'):'discard'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // log
+  const lines = [
+    logLine('info', `► ${nPulse} pulses · fiber: ${dist} km · α=0.20 dB/km → T=${(T*100).toFixed(2)}%`),
+    logLine('info', `► P(click) = ${(pClick*100).toFixed(2)}% · detected: ${detected} pulses`),
+    evePct>0 ? logLine('warn', `► Eve: ${(evePct*100).toFixed(0)}% intercept-resend active`) : logLine('dim', '► Eve: not present'),
+    logLine('info', `► Sifting: ${sifted} bits from ${detected} detected (basis match ≈ 50%)`),
+    logLine(qber<.05?'ok':qber<.11?'warn':'err', `► QBER = ${(qber*100).toFixed(2)}% (sample ${nSample} bits · ${sampleErrors} errors)`),
+    abort
+      ? logLine('err', `► ABORT — QBER > 11%. Key discarded. Eavesdropping or severe channel noise.`)
+      : logLine('ok',  `► Secret fraction = ${(secretFrac*100).toFixed(1)}% → final key: ${finalKey} bits`),
+    !abort && finalKey < 10 ? logLine('warn', `► Warning: very short key — increase pulses or reduce distance.`) : ''
+  ].filter(Boolean);
+  appendLog('bb84-log', lines);
+
+  addReport('bb84-run', `${nPulse} pulses, ${dist}km, QBER=${(qber*100).toFixed(2)}%, key=${abort?'ABORT':finalKey+'b'}`);
+  setStatus('ready');
+  if (showToastMsg) showToast('BB84 run complete.');
+  drawBB84Histogram([]);
+}
+
+function renderStages(stages) {
+  const el = $('bb84-stages'); if (!el) return;
+  el.innerHTML = stages.map(s => `
+    <div class="stage ${s.abort?'abort':s.ok?'done':''}">
+      <strong style="color:${s.abort?'var(--red)':s.ok?'var(--cyan)':'var(--dim)'}">${s.label}</strong>
+      <span>${s.sub}</span>
+    </div>`).join('');
+}
+
+function runBB84MonteCarlo() {
+  setStatus('monte carlo…');
+  const N = 300;
+  const qbers = [];
+  const base = {
+    pulses:   +($('bb84-pulses')?.value  || 256),
+    dist:     +($('bb84-distance')?.value || 20),
+    detEff:   +($('bb84-detector')?.value || 70)/100,
+    optErr:   +($('bb84-error')?.value   || 2)/100,
+    darkP:    +($('bb84-dark')?.value    || 0.1)/100,
+    evePct:   +($('bb84-eve')?.value     || 0)/100,
+    sampleF:  +($('bb84-sample')?.value  || 20)/100,
+  };
+  const alpha = 0.20;
+  const T = Math.pow(10, -alpha*base.dist/10);
+  const pClick = T*base.detEff + base.darkP;
+
+  for (let run=0; run<N; run++) {
+    const rng = seededRNG(run * 7919 + 1);
+    let sifted=0, siftedBits=[], siftedBitsB=[];
+    for (let i=0; i<base.pulses; i++) {
+      const aBit=rng()<.5?0:1, aBasis=rng()<.5?0:1, bBasis=rng()<.5?0:1;
+      if (rng() > pClick) continue;
+      let t=aBit;
+      if (rng()<base.evePct) { const eb=rng()<.5?0:1; t=(eb===aBasis)?aBit:(rng()<.5?0:1); }
+      let bBit=t; if(rng()<base.optErr) bBit^=1;
+      if(aBasis===bBasis){sifted++;siftedBits.push(aBit);siftedBitsB.push(bBit);}
+    }
+    const ns=Math.max(1,Math.round(sifted*base.sampleF));
+    let errs=0;
+    for(let k=0;k<ns&&k<sifted;k++) if(siftedBits[k]!==siftedBitsB[k]) errs++;
+    qbers.push(ns>0?errs/ns:0);
+  }
+  drawBB84Histogram(qbers);
+  setStatus('ready');
+  showToast('Monte Carlo done — '+N+' runs.');
+}
+
+function drawBB84Histogram(qbers) {
+  QNL.charts.save('bb84-chart', drawBB84Histogram, [qbers]);
+  const c = canvasSetup('bb84-chart'); if (!c) return;
+  const {ctx,W,H} = c;
+  const pad={l:44,r:20,t:22,b:40};
+  drawGrid(ctx, W, H, pad);
+  if (!qbers.length) {
+    ctx.fillStyle='rgba(255,255,255,.15)'; ctx.font='13px '+getComputedStyle(document.body).fontFamily;
+    ctx.textAlign='center'; ctx.fillText('Press "Monte Carlo" to generate QBER distribution (300 runs)', W/2, H/2);
+    return;
+  }
+  const bins=30, vals=new Array(bins).fill(0);
+  const mx=Math.max(...qbers,0.15);
+  qbers.forEach(q=>{ const b=Math.min(bins-1,Math.floor(q/mx*bins)); vals[b]++; });
+  const maxV=Math.max(...vals,1);
+  const bw=(W-pad.l-pad.r)/bins;
+  const abort=.11;
+  // shade abort region
+  const ax=pad.l+(abort/mx)*(W-pad.l-pad.r);
+  ctx.fillStyle='rgba(255,95,112,.07)';
+  ctx.fillRect(ax, pad.t, W-pad.r-ax, H-pad.t-pad.b);
+  ctx.strokeStyle='rgba(255,95,112,.4)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(ax,pad.t); ctx.lineTo(ax,H-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,95,112,.6)'; ctx.font='10px monospace'; ctx.textAlign='left';
+  ctx.fillText('abort > 11%', ax+4, pad.t+12);
+
+  vals.forEach((v,i)=>{
+    const x=pad.l+i*bw, bh=(v/maxV)*(H-pad.t-pad.b);
+    const q=i/bins*mx;
+    const col=q>.11?'rgba(255,95,112,.75)':q>.05?'rgba(255,190,68,.75)':'rgba(54,223,200,.7)';
+    ctx.fillStyle=col;
+    ctx.fillRect(x+1, H-pad.b-bh, bw-2, bh);
+  });
+  // x-axis labels
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  [0,.05,.1,.15].forEach(q=>{
+    if(q>mx) return;
+    const x=pad.l+(q/mx)*(W-pad.l-pad.r);
+    ctx.fillText((q*100).toFixed(0)+'%', x, H-pad.b+14);
+  });
+  ctx.fillText('QBER', W/2, H-4);
+  // y label
+  ctx.save(); ctx.translate(12, H/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText('count', 0, 0); ctx.restore();
+  // mean line
+  const mean=qbers.reduce((a,b)=>a+b,0)/qbers.length;
+  const mx2=pad.l+(mean/mx)*(W-pad.l-pad.r);
+  ctx.strokeStyle='rgba(91,163,255,.7)'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(mx2,pad.t); ctx.lineTo(mx2,H-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(91,163,255,.8)'; ctx.textAlign='center';
+  ctx.fillText('mean '+(mean*100).toFixed(1)+'%', mx2, pad.t+10);
+}
+
+$('bb84-run')?.addEventListener('click', () => runBB84(true));
+$('bb84-mc')?.addEventListener('click',  () => runBB84MonteCarlo());
+
+// ════════════════════════════════════════════════════════
+//  ENTANGLEMENT / TIME-BIN SIMULATION
+// ════════════════════════════════════════════════════════
+function runEntanglement(showMsg=true) {
+  setStatus('running entanglement…');
+  const rPairs  = +($('ent-rate')?.value   || 500) * 1e3;
+  const span    = +($('ent-span')?.value   || 30);
+  const visIntr = +($('ent-vis')?.value    || 94) / 100;
+  const phaseN  = +($('ent-phase')?.value  || 8);
+  const dark    = +($('ent-dark')?.value   || 300);
+  const window_ = +($('ent-window')?.value || 100) * 1e-12;
+  const band    = $('ent-band')?.value || '1310';
+  const alpha   = band==='1310'?0.35: band==='1550'?0.20: 3.0;
+  const halfDist = span/2;
+  const T_arm   = Math.pow(10,-alpha*halfDist/10) * 0.78; // 0.78 coupling
+  const C_sig   = rPairs * T_arm * T_arm;
+  const singles = rPairs * T_arm * 2;
+  const C_acc   = singles * singles * window_;
+  const C_total = C_sig + C_acc;
+  const phaseRad = phaseN * Math.PI/180;
+  const V_phase  = Math.exp(-phaseRad*phaseRad/2);
+  const V_multi  = Math.max(0.5, 1 - rPairs/2e8);
+  const V_noise  = C_sig>0 ? C_sig/(C_sig + 2*C_acc + dark*window_*1e9) : 0.1;
+  const V_eff    = visIntr * V_phase * V_multi * V_noise;
+  const S        = 2*Math.SQRT2 * V_eff;
+  const qber_    = Math.max(0, (1-V_eff)/2);
+  const Rkey     = 0.5 * C_sig * Math.max(0, 1-2*h2(qber_));
+
+  setMetric('ent-m-coinc', fmtHz(C_sig),   colourClass(C_sig, 1000, 100));
+  setMetric('ent-m-vis',   (V_eff*100).toFixed(1)+'%', colourClass(V_eff,.85,.70));
+  setMetric('ent-m-s',     S.toFixed(3),    S>2.4?'good':S>2?'warn-text':'bad');
+  setMetric('ent-m-key',   fmtRate(Rkey),  colourClass(Rkey,1000,100));
+
+  const lines=[
+    logLine('info', `► Pairs: ${(rPairs/1e3).toFixed(0)} kpairs/s · span: ${span} km · α=${alpha} dB/km`),
+    logLine('info', `► T_arm=${(T_arm*100).toFixed(2)}% · C_signal=${fmtHz(C_sig)} · C_acc=${C_acc.toFixed(1)} Hz`),
+    logLine('info', `► V_phase=${(V_phase*100).toFixed(1)}% (σφ=${phaseN}°) · V_multi=${(V_multi*100).toFixed(1)}%`),
+    logLine(V_eff>.85?'ok':V_eff>.7?'warn':'err', `► Franson visibility: ${(V_eff*100).toFixed(2)}%`),
+    logLine(S>2?'ok':'err', `► CHSH S = ${S.toFixed(4)} (limit 2.000, Tsirelson 2.828) → Bell ${S>2?'VIOLATED ✓':'not violated ✗'}`),
+    logLine('info', `► QBER ≈ ${(qber_*100).toFixed(2)}% → BBM92 key rate: ${fmtRate(Rkey)}`)
+  ];
+  appendLog('ent-log', lines);
+  drawFransonPlot(V_eff);
+  drawScanChart([]);
+  addReport('entangle-run', `span=${span}km · V=${(V_eff*100).toFixed(1)}% · S=${S.toFixed(2)} · key=${fmtRate(Rkey)}`);
+  setStatus('ready');
+  if(showMsg) showToast('Entanglement simulation done.');
+}
+
+function runEntanglementScan() {
+  const rPairs  = +($('ent-rate')?.value   || 500)*1e3;
+  const visIntr = +($('ent-vis')?.value    || 94)/100;
+  const phaseN  = +($('ent-phase')?.value  || 8);
+  const dark    = +($('ent-dark')?.value   || 300);
+  const window_ = +($('ent-window')?.value || 100)*1e-12;
+  const band    = $('ent-band')?.value || '1310';
+  const alpha   = band==='1310'?0.35: band==='1550'?0.20: 3.0;
+  const phaseRad= phaseN*Math.PI/180;
+  const pts=50;
+  const data=[];
+  for(let k=0;k<pts;k++){
+    const span=2+k*(160/pts);
+    const T=Math.pow(10,-alpha*(span/2)/10)*0.78;
+    const cs=rPairs*T*T;
+    const sg=rPairs*T*2;
+    const ca=sg*sg*window_;
+    const Vp=Math.exp(-phaseRad*phaseRad/2);
+    const Vm=Math.max(.5,1-rPairs/2e8);
+    const Vn=cs>0?cs/(cs+2*ca+dark*window_*1e9):0.1;
+    const V=visIntr*Vp*Vm*Vn;
+    const q=Math.max(0,(1-V)/2);
+    const R=0.5*cs*Math.max(0,1-2*h2(q));
+    data.push({span,R});
+  }
+  drawScanChart(data);
+  showToast('Distance scan complete.');
+}
+
+function drawFransonPlot(V) {
+  QNL.charts.save('ent-franson', drawFransonPlot, [V]);
+  const c = canvasSetup('ent-franson'); if(!c) return;
+  const {ctx,W,H} = c;
+  const pad={l:50,r:18,t:24,b:40};
+  drawGrid(ctx,W,H,pad);
+  // shaded area
+  const steps=300;
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const phi=(i/steps)*4*Math.PI-2*Math.PI;
+    const x=pad.l+(i/steps)*(W-pad.l-pad.r);
+    const norm=0.5*(1+V*Math.cos(phi));
+    const y=(H-pad.b)-(H-pad.t-pad.b)*norm;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle='#5ba3ff'; ctx.lineWidth=2; ctx.stroke();
+  // fill under
+  ctx.lineTo(W-pad.r,H-pad.b); ctx.lineTo(pad.l,H-pad.b); ctx.closePath();
+  ctx.fillStyle='rgba(91,163,255,.07)'; ctx.fill();
+  // midline
+  const mid=(H-pad.b)-(H-pad.t-pad.b)*0.5;
+  ctx.strokeStyle='rgba(54,223,200,.3)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l,mid); ctx.lineTo(W-pad.r,mid); ctx.stroke(); ctx.setLineDash([]);
+  // labels
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  ['-2π','-π','0','π','2π'].forEach((lbl,idx)=>{
+    const x=pad.l+(idx/4)*(W-pad.l-pad.r);
+    ctx.fillText(lbl, x, H-pad.b+14);
+  });
+  ctx.fillText('Phase φ', W/2, H-4);
+  ctx.save(); ctx.translate(14,H/2); ctx.rotate(-Math.PI/2); ctx.fillText('Coincidences (norm.)',0,0); ctx.restore();
+  // visibility annotation
+  ctx.fillStyle='rgba(54,223,200,.85)'; ctx.font='bold 12px monospace'; ctx.textAlign='right';
+  ctx.fillText(`V = ${(V*100).toFixed(1)}%`, W-pad.r-6, pad.t+18);
+  const Sv=2*Math.SQRT2*V;
+  ctx.fillStyle=Sv>2?'rgba(93,217,138,.8)':'rgba(255,95,112,.8)'; ctx.font='11px monospace';
+  ctx.fillText(`S = ${Sv.toFixed(3)} ${Sv>2?'✓':'✗'}`, W-pad.r-6, pad.t+34);
+}
+
+function drawScanChart(data) {
+  QNL.charts.save('ent-scan-chart', drawScanChart, [data]);
+  const c = canvasSetup('ent-scan-chart'); if(!c) return;
+  const {ctx,W,H} = c;
+  const pad={l:58,r:18,t:20,b:40};
+  drawGrid(ctx,W,H,pad);
+  if(!data.length){
+    ctx.fillStyle='rgba(255,255,255,.15)'; ctx.font='12px monospace'; ctx.textAlign='center';
+    ctx.fillText('Press "Scan distance" to plot key rate vs span', W/2, H/2); return;
+  }
+  const maxR=Math.max(...data.map(d=>d.R),1);
+  const maxS=data[data.length-1].span;
+  // gradient line
+  const gr=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+  gr.addColorStop(0,'rgba(93,217,138,.9)'); gr.addColorStop(.6,'rgba(255,190,68,.8)'); gr.addColorStop(1,'rgba(255,95,112,.6)');
+  ctx.beginPath(); ctx.strokeStyle=gr; ctx.lineWidth=2.2;
+  data.forEach((d,i)=>{
+    const x=pad.l+(d.span/maxS)*(W-pad.l-pad.r);
+    const y=(H-pad.b)-(H-pad.t-pad.b)*(d.R/maxR);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // fill
+  ctx.lineTo(W-pad.r,H-pad.b); ctx.lineTo(pad.l,H-pad.b); ctx.closePath();
+  ctx.fillStyle='rgba(54,223,200,.05)'; ctx.fill();
+  // axes
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  [0,40,80,120,160].forEach(km=>{
+    if(km>maxS) return;
+    const x=pad.l+(km/maxS)*(W-pad.l-pad.r);
+    ctx.fillText(km+'km', x, H-pad.b+14);
+  });
+  ctx.fillText('Fiber span', W/2, H-4);
+  ctx.save(); ctx.translate(14,H/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('Key rate (bps)',0,0); ctx.restore();
+}
+
+$('ent-run')?.addEventListener('click',  ()=>runEntanglement(true));
+$('ent-scan')?.addEventListener('click', ()=>runEntanglementScan());
+
+// ════════════════════════════════════════════════════════
+//  ROUTING SIMULATION
+// ════════════════════════════════════════════════════════
+let routingGraph = {nodes:[], edges:[]};
+
+function buildRoutingGraph() {
+  const topo   = $('rt-topology')?.value || 'diamond';
+  const nNodes = +($('rt-nodes')?.value || 7);
+  const linkLen= +($('rt-length')?.value || 12);
+  const fidBase= +($('rt-fidelity')?.value || 88)/100;
+  const bsmP   = +($('rt-bsm')?.value || 50)/100;
+  const alpha  = 0.20;
+
+  const nodes=[], edges=[];
+  const W=$('rt-canvas')?.offsetWidth||600, H=300;
+
+  if(topo==='line') {
+    for(let i=0;i<nNodes;i++){
+      nodes.push({id:i, x:40+i*(W-80)/(nNodes-1), y:H/2, label:i===0?'Alice':i===nNodes-1?'Bob':'R'+i, type:i===0||i===nNodes-1?'end':'repeater'});
+    }
+    for(let i=0;i<nNodes-1;i++) edges.push({a:i,b:i+1,len:linkLen+Math.random()*4-2});
+  } else if(topo==='diamond') {
+    const cx=W/2, cy=H/2;
+    nodes.push({id:0,x:60,y:cy,label:'Alice',type:'end'});
+    nodes.push({id:1,x:cx-80,y:cy-90,label:'R1',type:'repeater'});
+    nodes.push({id:2,x:cx-80,y:cy+90,label:'R2',type:'repeater'});
+    nodes.push({id:3,x:cx+80,y:cy-70,label:'R3',type:'repeater'});
+    nodes.push({id:4,x:cx+80,y:cy+70,label:'R4',type:'repeater'});
+    nodes.push({id:5,x:W-60,y:cy,label:'Bob',type:'end'});
+    [[0,1],[0,2],[1,3],[2,4],[1,2],[3,4],[3,5],[4,5]].forEach(([a,b])=>
+      edges.push({a,b,len:linkLen+(Math.random()-.5)*6}));
+  } else if(topo==='ring') {
+    const n=Math.min(nNodes,8);
+    for(let i=0;i<n;i++){
+      const a=(i/n)*2*Math.PI-Math.PI/2;
+      nodes.push({id:i,x:W/2+(W/2-60)*Math.cos(a),y:H/2+(H/2-30)*Math.sin(a),label:i===0?'Alice':i===n-1?'Bob':'R'+i,type:i===0||i===n-1?'end':'repeater'});
+    }
+    for(let i=0;i<n;i++) edges.push({a:i,b:(i+1)%n,len:linkLen+(Math.random()-.5)*5});
+  } else { // mesh
+    const n=Math.min(nNodes,8);
+    for(let i=0;i<n;i++){
+      nodes.push({id:i,x:60+(Math.random()*.8+.1)*(W-120),y:40+(Math.random()*.8)*(H-80),label:i===0?'Alice':i===n-1?'Bob':'R'+i,type:i===0||i===n-1?'end':'repeater'});
+    }
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+      if(Math.sqrt(dx*dx+dy*dy)<(W/3)) edges.push({a:i,b:j,len:linkLen+(Math.random()-.5)*8});
+    }
+  }
+  // compute edge properties
+  edges.forEach(e=>{
+    const T=Math.pow(10,-alpha*e.len/10);
+    e.pLink=T*T*bsmP;
+    e.fLink=fidBase*(0.9+Math.random()*.1);
+    e.cost=-Math.log(Math.max(1e-6, e.pLink*e.fLink));
+  });
+  routingGraph={nodes,edges};
+  drawRoutingCanvas([],null);
+}
+
+function dijkstra(nodes, edges, src, dst) {
+  const dist=new Array(nodes.length).fill(Infinity);
+  const prev=new Array(nodes.length).fill(null);
+  const visited=new Set();
+  dist[src]=0;
+  while(true){
+    let u=-1;
+    nodes.forEach((_,i)=>{ if(!visited.has(i)&&(u<0||dist[i]<dist[u])) u=i; });
+    if(u<0||u===dst||dist[u]===Infinity) break;
+    visited.add(u);
+    edges.filter(e=>e.a===u||e.b===u).forEach(e=>{
+      const v=e.a===u?e.b:e.a;
+      if(dist[u]+e.cost<dist[v]){dist[v]=dist[u]+e.cost;prev[v]=u;}
+    });
+  }
+  const path=[]; let cur=dst;
+  while(cur!==null){path.unshift(cur);cur=prev[cur];}
+  return path[0]===src?path:[];
+}
+
+function runRouting(showMsg=true) {
+  setStatus('routing…');
+  buildRoutingGraph();
+  const {nodes,edges}=routingGraph;
+  if(!nodes.length){setStatus('ready');return;}
+  const src=0, dst=nodes.length-1;
+  const path=dijkstra(nodes,edges,src,dst);
+  if(!path.length||path.length<2){
+    appendLog('rt-log',[logLine('err','► No route found. Try a different topology.')]);
+    setStatus('ready'); return;
+  }
+  const memT  = +($('rt-memory')?.value || 50);
+  const purify= +($('rt-purify')?.value || 1);
+  const bsmP  = +($('rt-bsm')?.value || 50)/100;
+  let F=1, pRoute=1;
+  const lines=[];
+  lines.push(logLine('info',`► Route found: ${path.map(i=>nodes[i].label).join(' → ')} (${path.length-1} hops)`));
+  // link entanglement
+  for(let k=0;k<path.length-1;k++){
+    const e=edges.find(e=>(e.a===path[k]&&e.b===path[k+1])||(e.b===path[k]&&e.a===path[k+1]));
+    if(!e) continue;
+    pRoute*=e.pLink;
+    F=F*e.fLink+(1-F)*(1-e.fLink)/3;
+    lines.push(logLine('ok',`  Link ${nodes[path[k]].label}→${nodes[path[k+1]].label}: F=${(e.fLink*100).toFixed(1)}% · P=${(e.pLink*100).toFixed(2)}%`));
+  }
+  // swaps at intermediate nodes
+  for(let k=1;k<path.length-1;k++){
+    const delay=e=>(e?.len||12)/200e3*1e3; // ms propagation
+    const decoF=Math.exp(-(delay(edges.find(e=>e.a===path[k]||e.b===path[k]))||2)/memT);
+    F=F*decoF; pRoute*=bsmP;
+    const Fswap=F*F+(1-F)*(1-F)/3;
+    F=Fswap;
+    lines.push(logLine(F>.6?'ok':'warn',`  Swap @ ${nodes[path[k]].label}: decoherence×${decoF.toFixed(3)} → F=${(F*100).toFixed(2)}%`));
+  }
+  // purification
+  for(let r=0;r<purify&&F<.99;r++){
+    const F2=F, gain=(F2*F2)/(F2*F2+(1-F2)*(1-F2));
+    F=gain; pRoute*=0.5;
+    lines.push(logLine('ok',`  Purification round ${r+1}: F ${(F2*100).toFixed(2)} → ${(F*100).toFixed(2)}%`));
+  }
+  const rAttempt=1e3; // attempts/s
+  const throughput=(pRoute*rAttempt).toFixed(1);
+  lines.push(logLine(F>.8?'ok':F>.6?'warn':'err',`► End-to-end F=${(F*100).toFixed(2)}% · P_success=${(pRoute*100).toFixed(3)}% · throughput=${throughput} ebits/s`));
+  appendLog('rt-log', lines);
+
+  setMetric('rt-m-route',  path.length-1+' hops', '');
+  setMetric('rt-m-fid',    (F*100).toFixed(2)+'%', colourClass(F,.8,.6));
+  setMetric('rt-m-prob',   (pRoute*100).toFixed(3)+'%', colourClass(pRoute,.01,.001));
+  setMetric('rt-m-rate',   throughput+' eb/s', colourClass(+throughput,10,1));
+
+  const lbl=$('rt-route-label');
+  if(lbl) lbl.textContent='Route: '+path.map(i=>nodes[i].label).join(' → ')+' | Swaps at: '+path.slice(1,-1).map(i=>nodes[i].label).join(', ');
+  drawRoutingCanvas(path, F);
+  addReport('routing-run', `${path.length-1} hops · F=${(F*100).toFixed(2)}% · ${throughput} eb/s`);
+  setStatus('ready');
+  if(showMsg) showToast('Routing complete.');
+  drawBurstChart([]);
+}
+
+function runBurst() {
+  buildRoutingGraph();
+  const {nodes,edges}=routingGraph;
+  const src=0, dst=nodes.length-1;
+  const path=dijkstra(nodes,edges,src,dst);
+  if(path.length<2){showToast('No route found.');return;}
+  const fids=[];
+  const memT=+($('rt-memory')?.value||50);
+  const bsmP=+($('rt-bsm')?.value||50)/100;
+  const purify=+($('rt-purify')?.value||1);
+  const rng=seededRNG(12345);
+  for(let attempt=0;attempt<200;attempt++){
+    let F=1,ok=true;
+    for(let k=0;k<path.length-1;k++){
+      const e=edges.find(e=>(e.a===path[k]&&e.b===path[k+1])||(e.b===path[k]&&e.a===path[k+1]));
+      if(!e||rng()>e.pLink){ok=false;break;}
+      F=F*e.fLink*(0.93+rng()*.07)+(1-F)*(1-e.fLink)/3;
+    }
+    if(!ok){fids.push(0);continue;}
+    for(let k=1;k<path.length-1;k++){
+      if(rng()>bsmP){ok=false;break;}
+      const decoF=Math.exp(-rng()*2/memT);
+      F=F*decoF; F=F*F+(1-F)*(1-F)/3;
+    }
+    if(!ok){fids.push(0);continue;}
+    for(let r=0;r<purify&&F<.99;r++) F=(F*F)/(F*F+(1-F)*(1-F));
+    fids.push(ok?F:0);
+  }
+  drawBurstChart(fids);
+  showToast('Burst of 200 attempts simulated.');
+}
+
+function drawRoutingCanvas(path, endF) {
+  QNL.charts.save('rt-canvas', drawRoutingCanvas, [path, endF]);
+  const cv=$('rt-canvas'); if(!cv) return;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=(cv.offsetWidth||600)*dpr; cv.height=(cv.offsetHeight||300)*dpr;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const W=cv.offsetWidth||600, H=cv.offsetHeight||300;
+  ctx.clearRect(0,0,W,H);
+  const {nodes,edges}=routingGraph;
+  if(!nodes.length) return;
+  // edges
+  edges.forEach(e=>{
+    const a=nodes[e.a],b=nodes[e.b];
+    const onPath=path.length>1&&path.includes(e.a)&&path.includes(e.b)&&Math.abs(path.indexOf(e.a)-path.indexOf(e.b))===1;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+    ctx.strokeStyle=onPath?'rgba(54,223,200,.75)':'rgba(255,255,255,.08)';
+    ctx.lineWidth=onPath?2:0.8;
+    if(onPath){ctx.setLineDash([8,4]);}else{ctx.setLineDash([]);}
+    ctx.stroke(); ctx.setLineDash([]);
+    // entanglement dot on active link
+    if(onPath){
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      ctx.beginPath(); ctx.arc(mx,my,5,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,212,170,.85)'; ctx.fill();
+      // pulse ring
+      ctx.beginPath(); ctx.arc(mx,my,9,0,Math.PI*2);
+      ctx.strokeStyle='rgba(0,212,170,.25)'; ctx.lineWidth=1; ctx.stroke();
+    }
+    // link len label
+    ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText(e.len.toFixed(1)+'km',(a.x+b.x)/2+8,(a.y+b.y)/2-6);
+  });
+  // nodes
+  nodes.forEach(n=>{
+    const onPath=path.includes(n.id);
+    const r=n.type==='end'?18:13;
+    ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=onPath?(n.type==='end'?'rgba(108,140,255,.22)':'rgba(54,223,200,.16)'):'rgba(255,255,255,.04)';
+    ctx.strokeStyle=onPath?(n.type==='end'?'rgba(108,140,255,.9)':'rgba(54,223,200,.85)'):'rgba(255,255,255,.16)';
+    ctx.lineWidth=onPath?2:.5; ctx.fill(); ctx.stroke();
+    if(onPath){
+      ctx.beginPath(); ctx.arc(n.x,n.y,r+6,0,Math.PI*2);
+      ctx.strokeStyle=n.type==='end'?'rgba(108,140,255,.15)':'rgba(54,223,200,.12)';
+      ctx.lineWidth=1; ctx.stroke();
+    }
+    ctx.fillStyle=onPath?'#fff':'rgba(255,255,255,.55)';
+    ctx.font=(n.type==='end'?'bold ':'')+' 11px '+getComputedStyle(document.body).fontFamily;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.label, n.x, n.y);
+  });
+  // fidelity badge
+  if(endF!==null&&path.length>1){
+    ctx.fillStyle=endF>.8?'rgba(93,217,138,.85)':endF>.6?'rgba(255,190,68,.85)':'rgba(255,95,112,.85)';
+    ctx.font='bold 12px monospace'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText('F = '+(endF*100).toFixed(2)+'%', 10, 10);
+  }
+}
+
+function drawBurstChart(fids) {
+  QNL.charts.save('rt-burst-chart', drawBurstChart, [fids]);
+  const c=canvasSetup('rt-burst-chart'); if(!c) return;
+  const {ctx,W,H}=c;
+  const pad={l:44,r:16,t:20,b:38};
+  drawGrid(ctx,W,H,pad);
+  if(!fids.length){
+    ctx.fillStyle='rgba(255,255,255,.15)'; ctx.font='12px monospace'; ctx.textAlign='center';
+    ctx.fillText('Press "Attempt burst" to simulate 200 routing attempts', W/2, H/2); return;
+  }
+  const success=fids.filter(f=>f>0);
+  const bins=20; const vals=new Array(bins).fill(0);
+  success.forEach(f=>{const b=Math.min(bins-1,Math.floor(f*bins)); vals[b]++;});
+  const maxV=Math.max(...vals,1);
+  const bw=(W-pad.l-pad.r)/bins;
+  vals.forEach((v,i)=>{
+    const fmid=(i+.5)/bins;
+    const bh=(v/maxV)*(H-pad.t-pad.b);
+    const col=fmid>.8?'rgba(93,217,138,.75)':fmid>.6?'rgba(255,190,68,.75)':'rgba(255,95,112,.7)';
+    ctx.fillStyle=col;
+    ctx.fillRect(pad.l+i*bw+1, H-pad.b-bh, bw-2, bh);
+  });
+  // failure bar at 0
+  const failPct=(fids.length-success.length)/fids.length;
+  ctx.fillStyle='rgba(255,95,112,.4)';
+  ctx.fillRect(pad.l-12, H-pad.b-(H-pad.t-pad.b)*failPct, 10, (H-pad.t-pad.b)*failPct);
+  ctx.fillStyle='rgba(255,95,112,.6)'; ctx.font='9px monospace'; ctx.textAlign='center';
+  ctx.fillText('fail', pad.l-7, H-pad.b-4);
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  [0,.2,.4,.6,.8,1].forEach(f=>{
+    const x=pad.l+f*(W-pad.l-pad.r);
+    ctx.fillText((f*100).toFixed(0)+'%', x, H-pad.b+14);
+  });
+  ctx.fillText('End-to-end fidelity', W/2, H-4);
+  const mean=success.length?success.reduce((a,b)=>a+b,0)/success.length:0;
+  const mx=pad.l+mean*(W-pad.l-pad.r);
+  ctx.strokeStyle='rgba(91,163,255,.7)'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(mx,pad.t); ctx.lineTo(mx,H-pad.b); ctx.stroke(); ctx.setLineDash([]);
+}
+
+$('rt-run')?.addEventListener('click',      ()=>runRouting(true));
+$('rt-attempts')?.addEventListener('click', ()=>runBurst());
+$('rt-topology')?.addEventListener('change',()=>buildRoutingGraph());
+
+// ════════════════════════════════════════════════════════
+//  COEXISTENCE SIMULATION
+// ════════════════════════════════════════════════════════
+function runCoexist(showMsg=true) {
+  setStatus('coexistence…');
+  const qwl     = +($('cx-qwl')?.value     || 1310);
+  const length  = +($('cx-length')?.value  || 25);
+  const power   = +($('cx-power')?.value   || 0);
+  const wdm     = +($('cx-wdm')?.value     || 8);
+  const filter  = +($('cx-filter')?.value  || 25);
+  const iso     = +($('cx-isolation')?.value|| 105);
+  const detEff  = +($('cx-detector')?.value|| 75)/100;
+
+  const alphaQ  = qwl===1310?0.35: qwl===1550?0.20: 3.0;
+  const alphaC  = 0.20;
+  const pMw     = Math.pow(10,power/10);
+  const totalMw = pMw*wdm;
+
+  // signal counts
+  const TQ    = Math.pow(10,-alphaQ*length/10);
+  const signal= TQ*detEff*1e6; // 1Mphotons/s source assumed
+
+  // Raman noise — empirical model
+  const raman_coeff = qwl===1310 ? 2e-8 : qwl===1550 ? 8e-7 : 5e-9;
+  const filterFactor= Math.min(1, 25/filter);
+  const TC    = Math.pow(10,-alphaC*length/10);
+  const raman = totalMw * length * raman_coeff * filterFactor * TC * 1e9;
+
+  // leakage from isolation
+  const leakage = totalMw*1e6 * Math.pow(10,-iso/10);
+
+  // dark counts (detector model)
+  const darkCounts = 200 * detEff;
+
+  const totalNoise = raman + leakage + darkCounts;
+  const qber_optical = 0.01; // 1% intrinsic
+  const qber_noise   = 0.5*totalNoise/(signal+totalNoise);
+  const qber         = Math.min(.5, qber_optical + qber_noise);
+  const rateSecret   = 0.5*signal*Math.max(0,1-2*h2(qber));
+
+  setMetric('cx-m-signal', fmtHz(signal),      colourClass(signal,1e4,1e3));
+  setMetric('cx-m-noise',  fmtHz(totalNoise),  totalNoise<signal/10?'good':totalNoise<signal?'warn-text':'bad');
+  setMetric('cx-m-qber',   (qber*100).toFixed(2)+'%', qber<.05?'good':qber<.11?'warn-text':'bad');
+  setMetric('cx-m-key',    fmtRate(rateSecret), colourClass(rateSecret,1000,10));
+
+  // assessment
+  const aEl=$('cx-assessment');
+  if(aEl){
+    let html='';
+    if(qwl===1310) html='<strong style="color:var(--green)">✓ O-band (1310 nm)</strong> — Optimal for coexistence. ~240 nm separation from C-band classical traffic minimises Raman overlap. This is the approach of the KPN Hague–Delft deployed link.';
+    else if(qwl===1550) html='<strong style="color:var(--amber)">⚠ C-band (1550 nm)</strong> — Same band as WDM traffic causes severe Raman contamination. Requires extreme isolation (>120 dB) or dedicated dark fiber.';
+    else html='<strong style="color:var(--red)">✗ Visible (810 nm)</strong> — Not compatible with standard SMF-28 telecom fiber. Loss > 3 dB/km makes this impractical for metropolitan spans.';
+    html+=`<br><br>Signal: <strong style="color:var(--text)">${fmtHz(signal)}</strong> · Raman: <strong style="color:${raman>signal*.1?'var(--amber)':'var(--green)'}">${fmtHz(raman)}</strong> · Leakage: ${fmtHz(leakage)} · Dark: ${fmtHz(darkCounts)}<br>`;
+    html+=`QBER: <strong style="color:${qber>.11?'var(--red)':qber>.05?'var(--amber)':'var(--green)'}">${(qber*100).toFixed(2)}%</strong> → Secret key: <strong>${fmtRate(rateSecret)}</strong>`;
+    if(rateSecret<1) html+='<br><strong style="color:var(--red)">Zero secret key rate</strong> — reduce classical power, increase isolation, or use O-band wavelength.';
+    aEl.innerHTML=html;
+  }
+
+  drawSpectrum(qwl, wdm, raman, signal, length);
+  addReport('coexist-run', `${qwl}nm · ${length}km · ${wdm}×WDM · QBER=${(qber*100).toFixed(2)}% · key=${fmtRate(rateSecret)}`);
+  setStatus('ready');
+  if(showMsg) showToast('Coexistence budget updated.');
+}
+
+function runPowerScan() {
+  const qwl    = +($('cx-qwl')?.value    || 1310);
+  const length = +($('cx-length')?.value || 25);
+  const wdm    = +($('cx-wdm')?.value    || 8);
+  const filter = +($('cx-filter')?.value || 25);
+  const iso    = +($('cx-isolation')?.value|| 105);
+  const detEff = +($('cx-detector')?.value|| 75)/100;
+  const alphaQ = qwl===1310?0.35: qwl===1550?0.20: 3.0;
+  const alphaC = 0.20;
+  const TQ     = Math.pow(10,-alphaQ*length/10);
+  const TC     = Math.pow(10,-alphaC*length/10);
+  const signal = TQ*detEff*1e6;
+  const raman_coeff=qwl===1310?2e-8: qwl===1550?8e-7: 5e-9;
+  const filterF=Math.min(1,25/filter);
+  const pts=50; const data=[];
+  for(let k=0;k<pts;k++){
+    const pwr=-20+k*(32/pts);
+    const pMw=Math.pow(10,pwr/10)*wdm;
+    const ram=pMw*length*raman_coeff*filterF*TC*1e9;
+    const leak=pMw*1e6*Math.pow(10,-iso/10);
+    const noise=ram+leak+200*detEff;
+    const q=Math.min(.5,0.01+0.5*noise/(signal+noise));
+    data.push({pwr, key:0.5*signal*Math.max(0,1-2*h2(q))});
+  }
+  drawPowerScan(data);
+  showToast('Power scan complete.');
+}
+
+function drawSpectrum(qwl, wdm, raman, signal, len) {
+  QNL.charts.save('cx-spectrum', drawSpectrum, [qwl, wdm, raman, signal, len]);
+  const c=canvasSetup('cx-spectrum'); if(!c) return;
+  const {ctx,W,H}=c;
+  const pad={l:48,r:18,t:22,b:48};
+  drawGrid(ctx,W,H,pad);
+  const wlMin=700, wlMax=1700;
+  const wx=wl=>pad.l+(W-pad.l-pad.r)*(wl-wlMin)/(wlMax-wlMin);
+
+  // band shading
+  [{name:'O-band',s:1260,e:1360,col:'rgba(0,212,170,.06)'},
+   {name:'C-band',s:1530,e:1565,col:'rgba(91,163,255,.08)'}].forEach(b=>{
+    ctx.fillStyle=b.col; ctx.fillRect(wx(b.s),pad.t,wx(b.e)-wx(b.s),H-pad.t-pad.b);
+    ctx.fillStyle='rgba(255,255,255,.3)'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText(b.name,(wx(b.s)+wx(b.e))/2,H-pad.b+22);
+  });
+
+  // Raman floor (broadband)
+  const ramNorm=Math.min(.65,raman/(signal||1));
+  const ramGrad=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+  ramGrad.addColorStop(0,'rgba(255,190,68,0)');
+  ramGrad.addColorStop(.35,'rgba(255,190,68,'+ramNorm*.3+')');
+  ramGrad.addColorStop(1,'rgba(255,190,68,0)');
+  ctx.fillStyle=ramGrad;
+  ctx.fillRect(pad.l, H-pad.b-ramNorm*(H-pad.t-pad.b)*.6, W-pad.l-pad.r, ramNorm*(H-pad.t-pad.b)*.6);
+
+  // classical WDM peaks
+  for(let i=0;i<Math.min(wdm,48);i++){
+    const wl=1530+i*(35/Math.max(wdm,1));
+    const x=wx(wl);
+    const peakH=(H-pad.t-pad.b)*0.75;
+    ctx.fillStyle='rgba(91,163,255,.75)';
+    ctx.fillRect(x-2,H-pad.b-peakH,4,peakH);
+  }
+
+  // quantum channel
+  const qx=wx(qwl);
+  const qH=(H-pad.t-pad.b)*0.82;
+  const qCol=qwl===1310?'rgba(54,223,200,.9)':qwl===1550?'rgba(255,95,112,.9)':'rgba(255,190,68,.9)';
+  ctx.fillStyle=qCol;
+  ctx.fillRect(qx-3,H-pad.b-qH,6,qH);
+  // label
+  ctx.fillStyle=qCol; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+  ctx.fillText(qwl+'nm', qx, H-pad.b-qH-8);
+
+  // axes
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  [800,1000,1200,1310,1400,1550,1600].forEach(wl=>{
+    ctx.fillText(wl, wx(wl), H-pad.b+13);
+  });
+  ctx.fillText('Wavelength (nm)', W/2, H-4);
+
+  // legend
+  const leg=[{col:'rgba(91,163,255,.8)',lbl:'Classical WDM'},{col:qCol,lbl:'Quantum ch.'},{col:'rgba(255,190,68,.5)',lbl:'Raman floor'}];
+  leg.forEach((l,i)=>{
+    ctx.fillStyle=l.col; ctx.fillRect(W-145,pad.t+4+i*18,13,10);
+    ctx.fillStyle='rgba(255,255,255,.5)'; ctx.textAlign='left'; ctx.font='10px monospace';
+    ctx.fillText(l.lbl, W-129, pad.t+13+i*18);
+  });
+}
+
+function drawPowerScan(data) {
+  QNL.charts.save('cx-scan-chart', drawPowerScan, [data]);
+  const c=canvasSetup('cx-scan-chart'); if(!c) return;
+  const {ctx,W,H}=c;
+  const pad={l:60,r:18,t:20,b:40};
+  drawGrid(ctx,W,H,pad);
+  if(!data.length){
+    ctx.fillStyle='rgba(255,255,255,.15)'; ctx.font='12px monospace'; ctx.textAlign='center';
+    ctx.fillText('Press "Scan power" to plot secret key rate vs classical launch power', W/2, H/2); return;
+  }
+  const maxR=Math.max(...data.map(d=>d.key),1);
+  const minP=data[0].pwr, maxP=data[data.length-1].pwr;
+  const toX=p=>pad.l+(p-minP)/(maxP-minP)*(W-pad.l-pad.r);
+  const toY=r=>(H-pad.b)-(H-pad.t-pad.b)*(r/maxR);
+
+  // fill
+  ctx.beginPath();
+  data.forEach((d,i)=>{const x=toX(d.pwr),y=toY(d.key);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.lineTo(toX(maxP),H-pad.b); ctx.lineTo(pad.l,H-pad.b); ctx.closePath();
+  ctx.fillStyle='rgba(54,223,200,.06)'; ctx.fill();
+
+  // line
+  const gr=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+  gr.addColorStop(0,'rgba(93,217,138,.9)'); gr.addColorStop(.7,'rgba(255,190,68,.8)'); gr.addColorStop(1,'rgba(255,95,112,.7)');
+  ctx.beginPath(); ctx.strokeStyle=gr; ctx.lineWidth=2.2;
+  data.forEach((d,i)=>{const x=toX(d.pwr),y=toY(d.key);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();
+
+  // axes
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  [-20,-10,0,10].forEach(p=>{
+    if(p<minP||p>maxP) return;
+    ctx.fillText(p+'dBm', toX(p), H-pad.b+14);
+  });
+  ctx.fillText('Classical power/channel', W/2, H-4);
+  ctx.save(); ctx.translate(14,H/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('Key rate (bps)',0,0); ctx.restore();
+}
+
+$('cx-run')?.addEventListener('click',  ()=>runCoexist(true));
+$('cx-scan')?.addEventListener('click', ()=>runPowerScan());
+// live update on coexist controls
+['cx-qwl','cx-length','cx-power','cx-wdm','cx-filter','cx-isolation','cx-detector'].forEach(id=>{
+  const el=$(id); if(el) el.addEventListener('input', ()=>runCoexist(false));
+  if(el&&el.tagName==='SELECT') el.addEventListener('change', ()=>runCoexist(false));
+});
+
+// ════════════════════════════════════════════════════════
+//  MANUAL + NOTES HELPERS
+// ════════════════════════════════════════════════════════
+$('manual-open-all')?.addEventListener('click', () => {
+  document.querySelectorAll('#view-manual details.accordion').forEach(d => d.open=true);
+});
+$('notes-open-all')?.addEventListener('click', () => {
+  document.querySelectorAll('#view-notes details.accordion').forEach(d => d.open=true);
+});
+
+// ── EXPORT JSON ────────────────────────────────────────
+$('btn-export-json')?.addEventListener('click', () => {
+  const data = {
+    exported: new Date().toISOString(),
+    session_reports: reports,
+    labs: {
+      bb84: {
+        pulses:   $('bb84-pulses')?.value,
+        distance: $('bb84-distance')?.value,
+        detector: $('bb84-detector')?.value,
+        error:    $('bb84-error')?.value,
+        dark:     $('bb84-dark')?.value,
+        eve:      $('bb84-eve')?.value,
+        sample:   $('bb84-sample')?.value,
+        seed:     $('bb84-seed')?.value,
+        qber:     $('bb84-m-qber')?.textContent,
+        finalKey: $('bb84-m-final')?.textContent
+      },
+      entanglement: {
+        rate:   $('ent-rate')?.value,
+        span:   $('ent-span')?.value,
+        vis:    $('ent-vis')?.value,
+        phase:  $('ent-phase')?.value,
+        dark:   $('ent-dark')?.value,
+        window: $('ent-window')?.value,
+        band:   $('ent-band')?.value,
+        CHSH_S: $('ent-m-s')?.textContent,
+        keyRate:$('ent-m-key')?.textContent
+      },
+      routing: {
+        topology: $('rt-topology')?.value,
+        nodes:    $('rt-nodes')?.value,
+        length:   $('rt-length')?.value,
+        fidelity: $('rt-fidelity')?.value,
+        memory:   $('rt-memory')?.value,
+        bsm:      $('rt-bsm')?.value,
+        purify:   $('rt-purify')?.value,
+        endFid:   $('rt-m-fid')?.textContent,
+        throughput: $('rt-m-rate')?.textContent
+      },
+      coexistence: {
+        qwl:      $('cx-qwl')?.value,
+        length:   $('cx-length')?.value,
+        power:    $('cx-power')?.value,
+        wdm:      $('cx-wdm')?.value,
+        filter:   $('cx-filter')?.value,
+        isolation:$('cx-isolation')?.value,
+        detector: $('cx-detector')?.value,
+        qber:     $('cx-m-qber')?.textContent,
+        keyRate:  $('cx-m-key')?.textContent
+      }
+    }
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'qnl-session-' + Date.now() + '.json';
+  a.click();
+  showToast('Session exported as JSON.');
+});
+
+// ── INIT ───────────────────────────────────────────────
+// Run all sims silently on load so metrics show initial values
+window.addEventListener('load', () => {
+  renderReports();
+  buildRoutingGraph();
+  setTimeout(() => {
+    runBB84(false);
+    runEntanglement(false);
+    runCoexist(false);
+    drawBB84Histogram([]);
+    drawScanChart([]);
+    drawBurstChart([]);
+    drawPowerScan([]);
+  }, 200);
+});
+
+// ── REGISTER PROTOCOLS WITH PHYSICS ENGINE ───────────────
+// Add new protocols (E91, decoy-state BB84) by calling
+// QNL.physics.register('e91', runE91) here.
+QNL.physics.register('bb84',     (s) => runBB84(s));
+QNL.physics.register('entangle', (s) => runEntanglement(s));
+QNL.physics.register('routing',  (s) => runRouting(s));
+QNL.physics.register('coexist',  (s) => runCoexist(s));
+
+// ── DEBOUNCED RESIZE — redraws ALL registered charts ─────
+// Uses QNL.charts registry so every canvas (histograms,
+// Franson, routing graph, spectrum, scan charts) is
+// redrawn with its last data — not re-simulated.
+(function() {
+  let _resizeTimer;
+  function onResize() {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(() => {
+      // Routing canvas needs topology re-layout since node
+      // positions are calculated from offsetWidth at build time
+      buildRoutingGraph();
+      // Redraw all other registered canvases with saved data
+      QNL.charts.redrawAll();
+      // Coexistence spectrum is cheapest to fully recompute
+      runCoexist(false);
+    }, 180);  // 180ms debounce — smooth without lag
+  }
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', () => {
+    // Extra delay for orientation change since layout reflux takes longer
+    setTimeout(onResize, 300);
+  });
+})();
+
+</script>
+</body>
+</html>
