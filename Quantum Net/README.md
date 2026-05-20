@@ -41,5 +41,3 @@ The lab includes a JSON export tool. Click **"Export JSON report"** in the top n
 
 ## 📄 License
 This project is open-source and available under the MIT License.
-
-This project is open-source and available under the MIT License.
