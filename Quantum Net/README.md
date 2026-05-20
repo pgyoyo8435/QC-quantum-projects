@@ -8,8 +8,6 @@
 
 It is built as a **single-file, zero-dependency** web application. There is no build step, no framework, and no installation required—just open the file in any modern browser to start exploring quantum key distribution, entanglement routing, and fiber channel noise.
 
-[**Launch the Simulator Live**](https://yourusername.github.io/quantum-network-lab) *(Replace with your GitHub Pages link)*
-
 ---
 
 ## 🔬 Core Physics Models
@@ -42,9 +40,7 @@ The lab includes a JSON export tool. Click **"Export JSON report"** in the top n
 ## 👨‍💻 Author
 
 **Prashant Gupta**
-* [LinkedIn](https://linkedin.com/in/yourprofile)
-* [Portfolio/Website](https://yourwebsite.com)
-* For inquiries regarding research or PhD opportunities, please feel free to reach out via email.
+* [Gmail](prashantgupta8435475211@gmail.com)
 
 ## 📄 License
 
